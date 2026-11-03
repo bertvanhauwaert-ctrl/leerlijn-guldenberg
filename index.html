@@ -1,4 +1,7 @@
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="nl" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leerlijn ICT Basisonderwijs - Samen Digitaal</title>
   
@@ -105,11 +108,10 @@
 
     <!-- TOP HEADER NAVBAR WITH BRANDING "SAMEN DIGITAAL" -->
     <header class="bg-white border-b border-slate-200 z-30 shadow-xs no-print">
-      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         
-        <!-- Logo & Title styled according to "Samen Digitaal" huisstijl -->
+        <!-- Logo & Title -->
         <div class="flex items-center space-x-3.5">
-          <!-- Logo Image from afbeeldingen/digisprong logo.png -->
           <div class="h-12 flex items-center justify-center shrink-0">
             <img 
               src="afbeeldingen/digisprong logo.png" 
@@ -133,19 +135,26 @@
           </div>
         </div>
 
-        <!-- Progress bar & Action buttons -->
-        <div class="flex items-center flex-wrap gap-3">
+        <!-- Progress bar per Grade & Action buttons -->
+        <div class="flex items-center flex-wrap gap-2.5">
           
-          <!-- Voortgang Indicator -->
-          <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-1.5 flex items-center gap-3 shadow-2xs">
+          <!-- Voortgang Indicator per Leerjaar -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 flex items-center gap-2.5 shadow-2xs">
             <div class="text-left">
-              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Klasvoortgang</div>
-              <div class="text-xs font-extrabold text-slate-800">
-                {{ completedCount }} / {{ lessons.length }} gegeven <span class="text-brand-blue font-bold">({{ progressPercentage }}%)</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Voortgang:</span>
+                <select v-model="progressGrade" class="text-xs font-bold text-slate-800 bg-transparent border-0 p-0 focus:ring-0 cursor-pointer underline decoration-brand-blue">
+                  <option value="ALL">Alle Leerjaren (Totaal)</option>
+                  <option v-for="g in grades" :key="g.id" :value="g.id">{{ g.label }} ({{ g.code }})</option>
+                </select>
+              </div>
+              <div class="text-xs font-extrabold text-slate-800 mt-0.5">
+                {{ gradeProgressStats.completed }} / {{ gradeProgressStats.total }} gegeven 
+                <span class="text-brand-blue font-bold">({{ gradeProgressStats.percentage }}%)</span>
               </div>
             </div>
-            <div class="w-20 bg-slate-200 rounded-full h-2.5 overflow-hidden">
-              <div class="bg-brand-green h-2.5 rounded-full transition-all duration-500" :style="{ width: progressPercentage + '%' }"></div>
+            <div class="w-16 sm:w-20 bg-slate-200 rounded-full h-2.5 overflow-hidden shrink-0">
+              <div class="bg-brand-green h-2.5 rounded-full transition-all duration-500" :style="{ width: gradeProgressStats.percentage + '%' }"></div>
             </div>
           </div>
 
@@ -154,7 +163,7 @@
             <button 
               @click="viewMode = 'matrix'" 
               :class="viewMode === 'matrix' ? 'bg-white text-brand-blue font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-              class="px-3 py-1 text-xs rounded-lg transition-all flex items-center gap-1.5"
+              class="px-2.5 py-1 text-xs rounded-lg transition-all flex items-center gap-1"
               title="Matrix / Rasterweergave"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
@@ -163,7 +172,7 @@
             <button 
               @click="viewMode = 'list'" 
               :class="viewMode === 'list' ? 'bg-white text-brand-blue font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-              class="px-3 py-1 text-xs rounded-lg transition-all flex items-center gap-1.5"
+              class="px-2.5 py-1 text-xs rounded-lg transition-all flex items-center gap-1"
               title="Lijstweergave (Handig voor mobiel)"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -171,51 +180,72 @@
             </button>
           </div>
 
-          <!-- Download Button for Nieuwe leerlijn.docx -->
-          <a href="downloads/Nieuwe leerlijn.docx" download class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all transform active:scale-95">
+          <!-- Download Button Word Doc -->
+          <a href="downloads/Nieuwe leerlijn.docx" download class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all transform active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <span>Download Leerlijn (.docx)</span>
+            <span class="hidden sm:inline">Download Leerlijn (.docx)</span>
+            <span class="sm:hidden">.docx</span>
           </a>
 
-          <button @click="openAddModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-coral hover:bg-red-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all transform active:scale-95">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-            + Les
+          <!-- ADMIN MODE TOGGLE BUTTON -->
+          <button 
+            v-if="!isAdmin" 
+            @click="openAdminAuthModal()" 
+            class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            title="Inloggen als beheerder om lessen toe te voegen of te bewerken"
+          >
+            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <span>Admin</span>
           </button>
 
-          <button @click="printCurriculum()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-xl transition-all shadow-2xs">
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-            Afdrukken
-          </button>
+          <div v-else class="flex items-center gap-2">
+            <button @click="openAddModal()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-coral hover:bg-red-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all transform active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+              + Les
+            </button>
+            <button @click="logoutAdmin()" class="inline-flex items-center gap-1 px-2.5 py-2 bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold rounded-xl hover:bg-amber-200 transition-all">
+              🔓 Uitloggen
+            </button>
+          </div>
 
-          <!-- Options Menu -->
+          <!-- Options Menu (Admin Only / Print) -->
           <div class="relative group">
             <button class="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl shadow-2xs transition-all">
               <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
             </button>
-            <div class="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 hidden group-hover:block z-50">
-              <button @click="exportJSON()" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Exporteer JSON
+            <div class="absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-1 hidden group-hover:block z-50">
+              <button @click="printCurriculum()" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Afdrukken / Opslaan als PDF
               </button>
-              <label class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                Importeer JSON
-                <input type="file" accept=".json" @change="importJSON" class="hidden">
-              </label>
-              <hr class="my-1 border-slate-100">
-              <button @click="confirmReset()" class="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                Herstel standaarddata
-              </button>
+              
+              <template v-if="isAdmin">
+                <hr class="my-1 border-slate-100">
+                <button @click="exportJSON()" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Exporteer JSON (Admin)
+                </button>
+                <label class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  Importeer JSON (Admin)
+                  <input type="file" accept=".json" @change="importJSON" class="hidden">
+                </label>
+                <hr class="my-1 border-slate-100">
+                <button @click="confirmReset()" class="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Herstel standaarddata
+                </button>
+              </template>
             </div>
           </div>
+
         </div>
 
       </div>
     </header>
 
     <!-- CONTROL BAR: SEARCH & FILTERS -->
-    <section class="bg-slate-100/90 border-b border-slate-200 py-3 no-print">
+    <section class="bg-slate-100/90 border-b border-slate-200 py-2.5 no-print">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
         
         <!-- Search bar -->
@@ -262,7 +292,7 @@
 
         <!-- Grade Filter Pills -->
         <div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
-          <span class="text-xs font-bold text-slate-500 mr-1 hidden lg:inline">Leerjaar:</span>
+          <span class="text-xs font-bold text-slate-500 mr-1 hidden lg:inline">Toon Leerjaar:</span>
           <button 
             @click="selectedGradeFilter = 'ALL'"
             :class="selectedGradeFilter === 'ALL' ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'"
@@ -296,7 +326,6 @@
           <!-- MATRIX HEADER: 4 Categories stretched 100% -->
           <div class="grid-matrix-row border-b border-slate-200 bg-white">
             
-            <!-- Grade Column Title Header -->
             <div class="bg-slate-100/90 border-r border-slate-200 p-3.5 flex items-center justify-center">
               <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Leerjaar \ Categorie</span>
             </div>
@@ -361,7 +390,7 @@
                       {{ lesson.title }}
                     </h4>
                     
-                    <!-- Quick Toggle Completed Checkbox -->
+                    <!-- Quick Toggle Completed Checkbox for Teachers -->
                     <button 
                       @click.stop="toggleCompleted(lesson)" 
                       class="shrink-0 p-1 rounded-md transition-colors"
@@ -396,8 +425,8 @@
                 </div>
               </div>
 
-              <!-- Add Lesson inside cell -->
-              <div class="mt-2 pt-1 text-center no-print">
+              <!-- Add Lesson inside cell (ADMIN ONLY) -->
+              <div v-if="isAdmin" class="mt-2 pt-1 text-center no-print">
                 <button 
                   @click="openAddModal(grade.id, cat.id)"
                   class="w-full py-1.5 px-2 text-[11px] font-medium text-slate-400 hover:text-indigo-600 hover:bg-white border border-dashed border-slate-200 hover:border-indigo-300 rounded-lg transition-all flex items-center justify-center gap-1 opacity-70 hover:opacity-100"
@@ -447,7 +476,7 @@
                     {{ cat.title.split(' ')[0] }}
                   </span>
                   
-                  <button @click.stop="toggleCompleted(lesson)" class="px-2 py-0.5 text-[10px] font-bold rounded" :class="lesson.completed ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'">
+                  <button @click.stop="toggleCompleted(lesson)" class="px-2 py-0.5 text-[10px] font-bold rounded transition-colors" :class="lesson.completed ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'">
                     {{ lesson.completed ? '✓ Gegeven' : 'Markeer gegeven' }}
                   </button>
                 </div>
@@ -467,7 +496,6 @@
 
         </div>
       </div>
-
 
       <!-- EMPTY STATE IF SEARCH FAILS -->
       <div v-if="filteredLessonsCount === 0" class="text-center py-12 bg-white rounded-2xl border border-slate-200 mt-4">
@@ -628,15 +656,17 @@
           </button>
 
           <div class="flex items-center gap-2 ml-auto">
-            <button @click="openEditModal(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-all flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-              Bewerken
-            </button>
+            <template v-if="isAdmin">
+              <button @click="openEditModal(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Bewerken
+              </button>
 
-            <button @click="confirmDeleteLesson(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              Verwijderen
-            </button>
+              <button @click="confirmDeleteLesson(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Verwijderen
+              </button>
+            </template>
 
             <button @click="closeModal()" class="px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-all">
               Sluiten
@@ -649,16 +679,15 @@
 
 
     <!-- ======================================================== -->
-    <!-- MODAL 2: ADD / EDIT LESSON FORM -->
+    <!-- MODAL 2: ADD / EDIT LESSON FORM (ADMIN ONLY) -->
     <!-- ======================================================== -->
-    <div v-if="activeModal === 'FORM'" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div v-if="activeModal === 'FORM' && isAdmin" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all flex flex-col max-h-[92vh]">
         
-        <!-- Form Header -->
         <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div>
             <h2 class="text-lg font-bold text-slate-900">
-              {{ formLesson.id ? 'Les Bewerken' : 'Nieuwe Les Toevoegen' }}
+              {{ formLesson.id ? 'Les Bewerken (Admin)' : 'Nieuwe Les Toevoegen (Admin)' }}
             </h2>
             <p class="text-xs text-slate-500">Vul de lesfiches-gegevens in voor het ICT-overzicht</p>
           </div>
@@ -667,10 +696,8 @@
           </button>
         </div>
 
-        <!-- Form Body Inputs -->
         <form @submit.prevent="saveLesson" class="p-6 overflow-y-auto space-y-4 text-xs">
           
-          <!-- Title & Duration -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="sm:col-span-2">
               <label class="block font-bold text-slate-700 mb-1">Lestitel *</label>
@@ -682,7 +709,6 @@
             </div>
           </div>
 
-          <!-- Grade & Category Dropdowns -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-bold text-slate-700 mb-1">Leerjaar *</label>
@@ -698,13 +724,11 @@
             </div>
           </div>
 
-          <!-- Short Description -->
           <div>
             <label class="block font-bold text-slate-700 mb-1">Korte Beschrijving (zichtbaar op de kaart) *</label>
             <textarea v-model="formLesson.description" required rows="2" placeholder="Samenvatting in 1 of 2 zinnen..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
           </div>
 
-          <!-- Tools & Tags -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-bold text-slate-700 mb-1">Software / Materialen / Apps</label>
@@ -716,13 +740,11 @@
             </div>
           </div>
 
-          <!-- Leerdoelen (multiline) -->
           <div>
             <label class="block font-bold text-slate-700 mb-1">Leerdoelen (1 per regel)</label>
             <textarea v-model="formLesson.objectivesInput" rows="3" placeholder="- Eenvoudige stappenplannen begrijpen&#10;- Fouten in een route herstellen" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
           </div>
 
-          <!-- Lesverloop (Instap, Kern, Slot) -->
           <div class="space-y-3 pt-2 border-t border-slate-200">
             <h4 class="font-bold text-slate-800 text-xs">Lesverloop Fases</h4>
             <div>
@@ -739,13 +761,11 @@
             </div>
           </div>
 
-          <!-- Differentiatie -->
           <div>
             <label class="block font-bold text-slate-700 mb-1">Differentiatie / Extra Tips</label>
-            <input v-model="formLesson.differentiation" type="text" placeholder="Moeilijker: obstakels toevoegen. Eenvoudiger: beperk aantal stappen." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input v-model="formLesson.differentiation" type="text" placeholder="Moeilijker: obstakels toevoegen." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
 
-          <!-- Form Action Footer -->
           <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
             <button type="button" @click="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-100 transition-all">
               Annuleren
@@ -762,7 +782,48 @@
 
 
     <!-- ======================================================== -->
-    <!-- MODAL 3: CONFIRMATION DIALOG -->
+    <!-- MODAL 3: ADMIN AUTHENTICATION (PIN DIALOG) -->
+    <!-- ======================================================== -->
+    <div v-if="activeModal === 'ADMIN_AUTH'" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center">
+        
+        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+
+        <h3 class="text-lg font-bold text-slate-900">Beheerder Inloggen</h3>
+        <p class="text-xs text-slate-500 mt-1 mb-4">
+          Voer de pincode in om lessen toe te voegen, te bewerken of data te beheren.
+        </p>
+
+        <form @submit.prevent="verifyAdminPin()" class="space-y-4">
+          <div>
+            <input 
+              v-model="inputPin" 
+              type="password" 
+              placeholder="Pincode (Standaard: 1234)" 
+              class="w-full text-center tracking-widest text-lg font-bold py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none"
+              autofocus
+            >
+            <p v-if="pinError" class="text-xs text-rose-600 font-bold mt-1">Onjuiste pincode. Probeer opnieuw.</p>
+          </div>
+
+          <div class="flex items-center justify-center gap-2">
+            <button type="button" @click="closeModal()" class="w-1/2 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100">
+              Annuleren
+            </button>
+            <button type="submit" class="w-1/2 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs">
+              Ontgrendel
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- MODAL 4: CONFIRMATION DIALOG -->
     <!-- ======================================================== -->
     <div v-if="activeModal === 'CONFIRM_DELETE' || activeModal === 'CONFIRM_RESET'" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center">
@@ -777,7 +838,7 @@
         
         <p class="text-xs text-slate-500 mt-1 mb-6">
           {{ activeModal === 'CONFIRM_DELETE' 
-              ? 'Weet je zeker dat je deze les wilt verwijderen uit de leerlijn? Dit kan niet ongedaan worden gemaakt.' 
+              ? 'Weet je zeker dat je deze les wilt verwijderen uit de leerlijn?' 
               : 'Alle eigen aanpassingen en de voortgang worden overschreven met de fabrieksinstellingen.' }}
         </p>
 
@@ -809,7 +870,8 @@
   <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // INITIAL DATASET
+    const DEFAULT_ADMIN_PIN = "1234";
+
     const INITIAL_LESSONS = [
       // K3
       {
@@ -917,7 +979,7 @@
       {
         id: 'l3-veil-1', grade: 'L3', category: 'veiligheid', title: 'Veilig internetten op school',
         description: 'Gedragsregels voor het gebruik van schoollaptops.', duration: '40 min', tools: 'ICT-Contract', tags: ['Netiquette', 'Schoolregels'], completed: false,
-        objectives: ['Gedragsregels voor school-laptops begrijpen'], materials: 'Klascontract.', instap: 'Afspraken online vs speelplaats.', kern: 'Casussen bespreken.', slot: 'Contract ondertekenen.'
+        objectives: ['Gedragsregels voor school-laptops begrijpen'], materials: 'Klascontract.', instap: 'Afspraken online vs speelplaats.', kern: 'Casussen bespreken.', slot: 'Contract untertekenen.'
       },
       {
         id: 'l3-media-1', grade: 'L3', category: 'mediawijsheid', title: 'Reclame in gratis games',
@@ -997,7 +1059,6 @@
       }
     ];
 
-    // CATEGORIES CONFIGURATION (Solid colors used for Headers to fix overlay bug)
     const CATEGORIES = [
       {
         id: 'computationeel',
@@ -1053,7 +1114,6 @@
       }
     ];
 
-    // GRADES CONFIGURATION
     const GRADES = [
       { id: 'K3', code: 'K3', label: '3de Kleuterklas', shortLabel: 'K3', ageGroup: '5-6 jaar' },
       { id: 'L1', code: 'L1', label: '1ste Leerjaar', shortLabel: 'L1', ageGroup: '6-7 jaar' },
@@ -1070,9 +1130,15 @@
         const searchQuery = ref('');
         const selectedGradeFilter = ref('ALL');
         const selectedCategoryFilter = ref('ALL');
-        const statusFilter = ref('ALL'); // 'ALL', 'TODO', 'DONE'
-        const viewMode = ref('matrix'); // 'matrix' or 'list'
+        const statusFilter = ref('ALL');
+        const progressGrade = ref('ALL'); // Selection for Progress Bar
+        const viewMode = ref('matrix');
         
+        // Admin rights state
+        const isAdmin = ref(false);
+        const inputPin = ref('');
+        const pinError = ref(false);
+
         // Modals
         const activeModal = ref(null); 
         const activeLesson = ref(null);
@@ -1082,7 +1148,7 @@
         const toast = ref({ show: false, message: '' });
 
         onMounted(() => {
-          const stored = localStorage.getItem('leerlijn_ict_lessons_v4');
+          const stored = localStorage.getItem('leerlijn_ict_lessons_v5');
           if (stored) {
             try {
               lessons.value = JSON.parse(stored);
@@ -1092,22 +1158,30 @@
           } else {
             lessons.value = INITIAL_LESSONS;
           }
+
+          // Check if admin is logged in
+          if (sessionStorage.getItem('leerlijn_ict_admin') === 'true') {
+            isAdmin.value = true;
+          }
         });
 
         watch(lessons, (newVal) => {
-          localStorage.setItem('leerlijn_ict_lessons_v4', JSON.stringify(newVal));
+          localStorage.setItem('leerlijn_ict_lessons_v5', JSON.stringify(newVal));
         }, { deep: true });
 
         const categories = computed(() => CATEGORIES);
         const grades = computed(() => GRADES);
 
-        const completedCount = computed(() => {
-          return lessons.value.filter(l => l.completed).length;
-        });
-
-        const progressPercentage = computed(() => {
-          if (!lessons.value.length) return 0;
-          return Math.round((completedCount.value / lessons.value.length) * 100);
+        // Progress Calculation filtered by selected grade in Header
+        const gradeProgressStats = computed(() => {
+          let list = lessons.value;
+          if (progressGrade.value !== 'ALL') {
+            list = list.filter(l => l.grade === progressGrade.value);
+          }
+          const total = list.length;
+          const completed = list.filter(l => l.completed).length;
+          const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+          return { total, completed, percentage };
         });
 
         const visibleGrades = computed(() => {
@@ -1135,11 +1209,9 @@
             if (lesson.grade !== gradeId) return false;
             if (lesson.category !== categoryId) return false;
             
-            // Status filter
             if (statusFilter.value === 'TODO' && lesson.completed) return false;
             if (statusFilter.value === 'DONE' && !lesson.completed) return false;
 
-            // Search filter
             if (searchQuery.value.trim() !== '') {
               const q = searchQuery.value.toLowerCase();
               const matchTitle = lesson.title.toLowerCase().includes(q);
@@ -1155,7 +1227,31 @@
 
         const toggleCompleted = (lesson) => {
           lesson.completed = !lesson.completed;
-          showNotification(lesson.completed ? `"${lesson.title}" gemarkeerd als gegeven!` : `Status van "${lesson.title}" hersteld.`);
+          showNotification(lesson.completed ? `"${lesson.title}" afgevinkt!` : `Status hersteld.`);
+        };
+
+        // Admin Auth
+        const openAdminAuthModal = () => {
+          inputPin.value = '';
+          pinError.value = false;
+          activeModal.value = 'ADMIN_AUTH';
+        };
+
+        const verifyAdminPin = () => {
+          if (inputPin.value === DEFAULT_ADMIN_PIN) {
+            isAdmin.value = true;
+            sessionStorage.setItem('leerlijn_ict_admin', 'true');
+            closeModal();
+            showNotification('Beheerdersmodus ontgrendeld!');
+          } else {
+            pinError.value = true;
+          }
+        };
+
+        const logoutAdmin = () => {
+          isAdmin.value = false;
+          sessionStorage.removeItem('leerlijn_ict_admin');
+          showNotification('Uitgelogd uit beheerdersmodus');
         };
 
         // Modal triggers
@@ -1165,6 +1261,7 @@
         };
 
         const openAddModal = (defaultGrade = 'K3', defaultCategory = 'computationeel') => {
+          if (!isAdmin.value) return;
           formLesson.value = {
             id: null,
             grade: defaultGrade,
@@ -1186,6 +1283,7 @@
         };
 
         const openEditModal = (lesson) => {
+          if (!isAdmin.value) return;
           formLesson.value = {
             ...lesson,
             tagsInput: lesson.tags ? lesson.tags.join(', ') : '',
@@ -1206,6 +1304,7 @@
         };
 
         const saveLesson = () => {
+          if (!isAdmin.value) return;
           const tagsArr = formLesson.value.tagsInput 
             ? formLesson.value.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
             : [];
@@ -1242,11 +1341,13 @@
         };
 
         const confirmDeleteLesson = (lesson) => {
+          if (!isAdmin.value) return;
           activeLesson.value = lesson;
           activeModal.value = 'CONFIRM_DELETE';
         };
 
         const deleteLesson = () => {
+          if (!isAdmin.value) return;
           if (activeLesson.value) {
             lessons.value = lessons.value.filter(l => l.id !== activeLesson.value.id);
             showNotification('Les verwijderd uit de leerlijn.');
@@ -1255,12 +1356,14 @@
         };
 
         const confirmReset = () => {
+          if (!isAdmin.value) return;
           activeModal.value = 'CONFIRM_RESET';
         };
 
         const executeReset = () => {
+          if (!isAdmin.value) return;
           lessons.value = [...INITIAL_LESSONS];
-          localStorage.removeItem('leerlijn_ict_lessons_v4');
+          localStorage.removeItem('leerlijn_ict_lessons_v5');
           showNotification('Fabrieksinstellingen hersteld.');
           closeModal();
         };
@@ -1277,6 +1380,7 @@
         };
 
         const importJSON = (event) => {
+          if (!isAdmin.value) return;
           const file = event.target.files[0];
           if (!file) return;
           const reader = new FileReader();
@@ -1335,18 +1439,24 @@
           selectedGradeFilter,
           selectedCategoryFilter,
           statusFilter,
+          progressGrade,
           viewMode,
+          isAdmin,
+          inputPin,
+          pinError,
           visibleGrades,
           visibleCategories,
           filteredLessonsCount,
-          completedCount,
-          progressPercentage,
+          gradeProgressStats,
           activeModal,
           activeLesson,
           formLesson,
           toast,
           getLessonsForCell,
           toggleCompleted,
+          openAdminAuthModal,
+          verifyAdminPin,
+          logoutAdmin,
           openViewModal,
           openAddModal,
           openEditModal,
