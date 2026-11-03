@@ -51,6 +51,13 @@
       background: #94a3b8;
     }
 
+    /* Grid matrix layout for 100% full-width column distribution */
+    .grid-matrix-row {
+      display: grid;
+      grid-template-columns: 180px repeat(4, minmax(0, 1fr));
+      width: 100%;
+    }
+
     /* Print layout styles */
     @media print {
       .no-print {
@@ -245,14 +252,14 @@
       <!-- ======================================================== -->
       <!-- OPTIE A: RASTERWEERGAVE (MATRIX) -->
       <!-- ======================================================== -->
-      <div v-if="viewMode === 'matrix'" class="overflow-x-auto">
-        <div class="min-w-[1050px] border border-slate-200 rounded-2xl bg-white shadow-xs overflow-hidden grid-matrix">
+      <div v-if="viewMode === 'matrix'" class="overflow-x-auto w-full">
+        <div class="w-full min-w-[900px] border border-slate-200 rounded-2xl bg-white shadow-xs overflow-hidden grid-matrix">
           
-          <!-- MATRIX HEADER: Solid backgrounds (Fixed overlap issue for K3) -->
-          <div class="grid grid-cols-12 border-b border-slate-200 bg-white">
+          <!-- MATRIX HEADER: 4 Categories stretched 100% -->
+          <div class="grid-matrix-row border-b border-slate-200 bg-white">
             
             <!-- Grade Column Title Header -->
-            <div class="col-span-2 bg-slate-100/90 border-r border-slate-200 p-3.5 flex items-center justify-center">
+            <div class="bg-slate-100/90 border-r border-slate-200 p-3.5 flex items-center justify-center">
               <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Leerjaar \ Categorie</span>
             </div>
 
@@ -260,7 +267,7 @@
             <div 
               v-for="cat in categories" 
               :key="cat.id"
-              class="col-span-2.5 border-r last:border-r-0 p-3.5 flex flex-col justify-between"
+              class="border-r last:border-r-0 p-3.5 flex flex-col justify-between min-w-0"
               :class="[cat.solidHeaderBg, cat.headerBorder]"
             >
               <div class="flex items-start gap-2.5">
@@ -270,9 +277,9 @@
                   <svg v-if="cat.icon === 'media'" class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
                   <svg v-if="cat.icon === 'sparkles'" class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
                 </div>
-                <div>
-                  <h3 class="font-bold text-xs leading-snug" :class="cat.textColor">{{ cat.title }}</h3>
-                  <p class="text-[10px] text-slate-500 leading-tight mt-0.5">{{ cat.subtitle }}</p>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-xs leading-snug truncate" :class="cat.textColor">{{ cat.title }}</h3>
+                  <p class="text-[10px] text-slate-500 leading-tight mt-0.5 truncate">{{ cat.subtitle }}</p>
                 </div>
               </div>
             </div>
@@ -283,10 +290,10 @@
           <div 
             v-for="grade in visibleGrades" 
             :key="grade.id"
-            class="grid grid-cols-12 border-b border-slate-200 last:border-b-0 group/row"
+            class="grid-matrix-row border-b border-slate-200 last:border-b-0 group/row"
           >
             <!-- Grade Left Cell -->
-            <div class="col-span-2 bg-slate-50/90 border-r border-slate-200 p-3 flex flex-col justify-center items-center text-center group-hover/row:bg-slate-100 transition-colors">
+            <div class="bg-slate-50/90 border-r border-slate-200 p-3 flex flex-col justify-center items-center text-center group-hover/row:bg-slate-100 transition-colors">
               <div class="w-9 h-9 rounded-full bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center shadow-xs mb-1">
                 {{ grade.code }}
               </div>
@@ -298,7 +305,7 @@
             <div 
               v-for="cat in visibleCategories" 
               :key="cat.id"
-              class="col-span-2.5 border-r last:border-r-0 p-3 relative flex flex-col justify-between transition-colors hover:bg-slate-50/50"
+              class="border-r last:border-r-0 p-3 relative flex flex-col justify-between transition-colors hover:bg-slate-50/50 min-w-0"
               :class="cat.bgTint"
             >
               <!-- Cards List -->
