@@ -870,194 +870,751 @@
   <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    const DEFAULT_ADMIN_PIN = "1234";
+    // 🔑 1. HIER WIJZIG JE DE ADMIN PINCODE:
+    const DEFAULT_ADMIN_PIN = "SamenDigitaal"; // Pas "1234" aan naar je gewenste code!
 
+    // 📄 2. HIER PLAK JE DE INHOUD VAN JE GEËXPORTEERDE JSON-BESTAND:
     const INITIAL_LESSONS = [
-      // K3
-      {
-        id: 'k3-comp-1', grade: 'K3', category: 'computationeel', title: 'Bee-Bot paden maken',
-        description: 'Met fysieke matten richtingen (vooruit, achteruit) programmeren.', duration: '45 min', tools: 'Bee-Bot, Vloermatten', tags: ['Bee-Bot', 'Unplugged'], completed: false,
-        objectives: ['Eenvoudige stappenplannen begrijpen en uitvoeren', 'Fysieke knoppen op de Bee-Bot koppelen aan bewegingsrichtingen', 'Fouten in een route opsporen en corrigeren'],
-        materials: '3 Bee-Bots, themamatten (vloer), pijlenkaarten.', instap: 'Demonstratie in de kring.', kern: 'Leerlingen werken in 3-tallen op de klasmat.', slot: 'Klasgesprek over fouten herstellen.', differentiation: 'Moeilijker: Voeg een obstakel toe.'
-      },
-      {
-        id: 'k3-comp-2', grade: 'K3', category: 'computationeel', title: 'Richtingkaarten sorteren',
-        description: 'Pijlen ordenen van start- naar eindpunt op de vloer.', duration: '30 min', tools: 'Vloertape, Pijlkaarten', tags: ['Pijlen', 'Unplugged'], completed: false,
-        objectives: ['Ruimtelijke oriëntatie benoemen', 'Een pad uitleggen met visuele symbolen'], materials: 'Grote gelamineerde pijlkaarten.', instap: 'Loop als een robot door de klas.', kern: 'Kleuters leggen een spoor van pijlen op de vloer.', slot: 'Samen het pad aflopen.'
-      },
-      {
-        id: 'k3-comp-3', grade: 'K3', category: 'computationeel', title: 'Patronen leggen op de mat',
-        description: 'Logische reeksen en kleurpatronen afmaken met bouwblokken.', duration: '35 min', tools: 'Bouwblokken, Roosters', tags: ['Patronen', 'Bouwstenen'], completed: false,
-        objectives: ['Herhalende patronen herkennen', 'Fouten in een reeks opsporen'], materials: 'Duplo/LEGO blokken in diverse kleuren.', instap: 'Ketting maken in de kring.', kern: 'Kleuters vullen patronen aan op de mat.', slot: 'Elkaars patroonketting bewonderen.'
-      },
-      {
-        id: 'k3-veil-1', grade: 'K3', category: 'veiligheid', title: 'Schermtijd afspreken',
-        description: 'Praatplaat over gezonde afspraken met tablets in de klas.', duration: '30 min', tools: 'Praatplaat, Klaszandloper', tags: ['Schermtijd', 'Klasafspraken'], completed: false,
-        objectives: ['Inzien dat schermen een tijdslimiet hebben'], materials: 'Praatplaat en zandloper.', instap: 'Kijk naar de praatplaat.', kern: 'Samen regels opstellen voor de tablethoek.', slot: 'Pictogrammen ophangen.'
-      },
-      {
-        id: 'k3-veil-2', grade: 'K3', category: 'veiligheid', title: 'Test met Bingel',
-        description: 'Tegels uittesten en zorgzaam omgaan met de klas-tablets.', duration: '25 min', tools: 'Klas-tablets, Bingel App', tags: ['Klasafspraken', 'Bingel'], completed: false,
-        objectives: ['Tablet veilig dragen met twee handen'], materials: 'Tablets met beschermhoes.', instap: 'Poppenspel over voorzichtigheid.', kern: 'Oefenen met inloggen en vasthouden.', slot: 'Tablet-diploma uitdelen.'
-      },
-      {
-        id: 'k3-media-1', grade: 'K3', category: 'mediawijsheid', title: 'Test 2',
-        description: 'Kritisch kijken naar foto\'s en illustraties in boeken.', duration: '30 min', tools: 'Prentenboeken, Tablets', tags: ['Beeldtaal', 'Foto vs Tekening'], completed: false,
-        objectives: ['Verschil herkennen tussen echte foto en tekening'], materials: 'Fotokaarten.', instap: 'Vergelijk foto met illustratie.', kern: 'Sorteerspel op tafel.', slot: 'Klasgesprek.'
-      },
-      {
-        id: 'k3-media-2', grade: 'K3', category: 'mediawijsheid', title: 'Test 3',
-        description: 'Herkennen van basispictogrammen op schermen.', duration: '30 min', tools: 'Tablets, Pictogramkaarten', tags: ['Pictogrammen', 'Navigatie'], completed: false,
-        objectives: ['Symbolen herkennen (Play, Pauze, Home, Kruisje)'], materials: 'Grote pictogrammen.', instap: 'Pictogrammenspel.', kern: 'Symbolen terugzoeken in kinder-apps.', slot: 'Quiz.'
-      },
-      {
-        id: 'k3-creat-1', grade: 'K3', category: 'creatie', title: 'Foto-zoektocht in de klas',
-        description: 'Voorwerpen uit het jaarthema fotograferen met de tablet.', duration: '45 min', tools: 'Camera-app op Tablet', tags: ['Fotografie', 'Tablet'], completed: false,
-        objectives: ['Camera-knop bedienen', 'Scherpstellen op voorwerpen'], materials: 'Zoekkaarten.', instap: 'Demonstratie camera.', kern: 'Voorwerpen zoeken en fotograferen.', slot: 'Diavoorstelling op digibord.'
-      },
-
-      // L1
-      {
-        id: 'l1-comp-1', grade: 'L1', category: 'computationeel', title: 'Pijlenreeks volgen (Unplugged)',
-        description: 'Papieren roosters doorlopen met pijlenkaarten.', duration: '45 min', tools: 'Roosters, Potloden', tags: ['Unplugged', 'Pijlen'], completed: false,
-        objectives: ['Instructies nauwkeurig volgen op papier'], materials: 'Werkbladen.', instap: 'Instructies voorlezen.', kern: 'Pad tekenen op werkblad.', slot: 'Controle op digibord.'
-      },
-      {
-        id: 'l1-comp-2', grade: 'L1', category: 'computationeel', title: 'Bee-Bot hindernissen',
-        description: 'Obstakels omzeilen op het stratenplan.', duration: '50 min', tools: 'Bee-Bot, Bouwblokken', tags: ['Bee-Bot', 'Debugging'], completed: false,
-        objectives: ['Alternatieve route programmeren bij een obstakel'], materials: 'Stratenplan.', instap: 'Omgevallen boom op de weg!', kern: 'Snelste route bouwen in duo\'s.', slot: 'Presentatie routes.'
-      },
-      {
-        id: 'l1-veil-1', grade: 'L1', category: 'veiligheid', title: 'Geheime wachtwoorden',
-        description: 'Waarom hou je je wachtwoord voor jezelf?', duration: '35 min', tools: 'Inlogkaarten', tags: ['Wachtwoorden', 'Privacy'], completed: false,
-        objectives: ['Begrijpen waarom een wachtwoord geheim is'], materials: 'Inlogkaarten.', instap: 'Geheimzinnig verhaaltje.', kern: 'Oefenen met inloggen.', slot: 'Klasregel vastleggen.'
-      },
-      {
-        id: 'l1-media-1', grade: 'L1', category: 'mediawijsheid', title: 'Echt of nep op foto?',
-        description: 'Bewerkt beeldmateriaal vergelijken met echte foto\'s.', duration: '40 min', tools: 'Digibord', tags: ['Beeldbewerking', 'Mediawijsheid'], completed: false,
-        objectives: ['Herkennen dat beelden digitaal veranderd kunnen worden'], materials: 'Presentatie.', instap: 'Kan een kat echt vliegen?', kern: 'Discussie over beeldbewerking.', slot: 'Stemronde met bordjes.'
-      },
-      {
-        id: 'l1-creat-1', grade: 'L1', category: 'creatie', title: 'Inspreken in Book Creator',
-        description: 'Stem opnemen bij een zelfgemaakte digitale tekening.', duration: '50 min', tools: 'Book Creator App', tags: ['Book Creator', 'Audio'], completed: false,
-        objectives: ['Tekening maken en eigen stem opnemen'], materials: 'Tablets.', instap: 'Opnameknop uitleggen.', kern: 'Dier tekenen en 1 zin inspreken.', slot: 'Beluisteren via klasluidspreker.'
-      },
-
-      // L2
-      {
-        id: 'l2-comp-1', grade: 'L2', category: 'computationeel', title: 'ScratchJr eerste stappen',
-        description: 'Figuurtjes laten bewegen en geluid maken.', duration: '50 min', tools: 'ScratchJr', tags: ['ScratchJr', 'Blokken'], completed: false,
-        objectives: ['Basisblokken begrijpen en animatie maken'], materials: 'Tablets.', instap: 'Kat laten bewegen op scherm.', kern: 'Twee karakters laten praten.', slot: 'Tablet-carrousel.'
-      },
-      {
-        id: 'l2-comp-2', grade: 'L2', category: 'computationeel', title: 'Stappenplan tandenpoetsen',
-        description: 'Dagelijkse handelingen ontleden in exacte volgorde.', duration: '35 min', tools: 'Stappenkaarten', tags: ['Algoritme', 'Dagelijks Leven'], completed: false,
-        objectives: ['Handeling opsplitsen in chronologische stappen'], materials: 'Kaartenset.', instap: 'Tanden verkeerd om poetsen.', kern: 'Kaarten in juiste volgorde leggen.', slot: 'Begrip Algoritme introduceren.'
-      },
-      {
-        id: 'l2-veil-1', grade: 'L2', category: 'veiligheid', title: 'Mijn persoonlijke gegevens',
-        description: 'Welke info (naam, adres, school) deel je wel of niet?', duration: '40 min', tools: 'Sorteerkaarten', tags: ['Privacy', 'Persoonsgegevens'], completed: false,
-        objectives: ['Onderscheid maken tussen privé en openbaar'], materials: 'Groen/rood bordje.', instap: 'Adres aan vreemden geven?', kern: 'Sorteeroefening op tafel.', slot: 'Privé-poster maken.'
-      },
-      {
-        id: 'l2-media-1', grade: 'L2', category: 'mediawijsheid', title: 'Zoeken op kindersites',
-        description: 'Gericht informatie opzoeken op veilige jeugdsites.', duration: '45 min', tools: 'Wikikids', tags: ['Zoekmachines', 'Internet'], completed: false,
-        objectives: ['Zoektermen intypen op kindersites'], materials: 'Zoekopdracht-kaarten.', instap: 'Hoe weet een pc het antwoord?', kern: 'Vragen beantwoorden via Wikikids.', slot: 'Beste zoekwoorden vergelijken.'
-      },
-      {
-        id: 'l2-creat-1', grade: 'L2', category: 'creatie', title: 'Digitaal prentenboek',
-        description: 'Prentenboek maken met tekst en ingesproken audio.', duration: '2x 45 min', tools: 'Book Creator', tags: ['Book Creator', 'Verhaal'], completed: false,
-        objectives: ['Tekst, beelden en audio combineren'], materials: 'Tablets.', instap: 'Voorbeeld prentenboek tonen.', kern: '3 pagina\'s maken (Begin, Midden, Einde).', slot: 'Klassenboek bundelen.'
-      },
-
-      // L3
-      {
-        id: 'l3-comp-1', grade: 'L3', category: 'computationeel', title: 'ScratchJr herhaallussen',
-        description: 'Herhaallussen gebruiken voor patronen in animaties.', duration: '50 min', tools: 'ScratchJr', tags: ['ScratchJr', 'Lussen'], completed: false,
-        objectives: ['Nut van herhaallussen begrijpen'], materials: 'Tablets.', instap: 'Losse blokken vergelijken met herhaallus.', kern: 'Vierkant wandelen of springen met herhaallus.', slot: 'Kortste code bekronen.'
-      },
-      {
-        id: 'l3-veil-1', grade: 'L3', category: 'veiligheid', title: 'Veilig internetten op school',
-        description: 'Gedragsregels voor het gebruik van schoollaptops.', duration: '40 min', tools: 'ICT-Contract', tags: ['Netiquette', 'Schoolregels'], completed: false,
-        objectives: ['Gedragsregels voor school-laptops begrijpen'], materials: 'Klascontract.', instap: 'Afspraken online vs speelplaats.', kern: 'Casussen bespreken.', slot: 'Contract untertekenen.'
-      },
-      {
-        id: 'l3-media-1', grade: 'L3', category: 'mediawijsheid', title: 'Reclame in gratis games',
-        description: 'Verborgen reclame en pop-ups in spelletjes herkennen.', duration: '45 min', tools: 'Digibord', tags: ['Reclame', 'In-Game'], completed: false,
-        objectives: ['Het doel van reclame in gratis games begrijpen'], materials: 'Screencasts van games.', instap: 'Waarom is een spel gratis in de winkel?', kern: 'Op zoek naar de kruisjes en nepknoppen.', slot: 'Regels opstellen.'
-      },
-      {
-        id: 'l3-creat-1', grade: 'L3', category: 'creatie', title: 'Presentatie van 3 dia\'s',
-        description: 'Diashow maken over een lievelingsdier.', duration: '2x 45 min', tools: 'Google Slides', tags: ['Google Slides', 'Presenteren'], completed: false,
-        objectives: ['Presentatie maken met tekst en beelden'], materials: 'Laptops.', instap: 'Wat maakt een goede diashow?', kern: '3 dia\'s vullen over lievelingsdier.', slot: 'Presenteren in duo\'s.'
-      },
-
-      // L4
-      {
-        id: 'l4-comp-1', grade: 'L4', category: 'computationeel', title: 'Micro:bit eerste stappen',
-        description: 'Tekst en smileys programmeren op de LED-matrix.', duration: '50 min', tools: 'Micro:bit, MakeCode', tags: ['Micro:bit', 'Hardware'], completed: false,
-        objectives: ['Code overzetten naar fysieke micro:bit'], materials: 'Micro:bits, USB-kabels.', instap: 'Waar zit de processor?', kern: 'Naamkaartje en smileys programmeren.', slot: 'Micro:bits tonen.'
-      },
-      {
-        id: 'l4-veil-1', grade: 'L4', category: 'veiligheid', title: 'Sterke wachtwoorden bouwen',
-        description: 'Wachtzinnen ontwerpen en testen met een wachtwoordmeter.', duration: '40 min', tools: 'Wachtwoordmeter', tags: ['Cyberhygiëne', 'Wachtwoorden'], completed: false,
-        objectives: ['Begrijpen wat een wachtwoord sterk maakt'], materials: 'Online tester.', instap: 'Test wachtwoord 123456.', kern: 'Wachtzinnen bedenken en testen.', slot: 'Poster met tips.'
-      },
-      {
-        id: 'l4-media-1', grade: 'L4', category: 'mediawijsheid', title: 'Online pesten & Groepschats',
-        description: 'Afspraken maken over respectvolle taal in klas-apps.', duration: '45 min', tools: 'Stellingkaarten', tags: ['Netiquette', 'Cyberpesten'], completed: false,
-        objectives: ['Impact van teksten zonder mimiek begrijpen'], materials: 'Voorbeeldchats.', instap: 'Bericht met en zonder smiley.', kern: 'Discussie over buitensluiten.', slot: 'WhatsApp protocol.'
-      },
-      {
-        id: 'l4-creat-1', grade: 'L4', category: 'creatie', title: 'Audio-podcast opnemen',
-        description: 'Kort nieuwsbericht of hoorspel inspreken en editen.', duration: '2x 45 min', tools: 'Audacity / Soundtrap', tags: ['Podcast', 'Audio'], completed: false,
-        objectives: ['Audio opnemen, knippen en bewerken'], materials: 'Microfoons.', instap: 'Kinder-podcast beluisteren.', kern: 'Nieuwsbericht inspreken met muziek.', slot: 'Podcast beluisteren.'
-      },
-
-      // L5
-      {
-        id: 'l5-comp-1', grade: 'L5', category: 'computationeel', title: 'Scratch variabelen & score',
-        description: 'Spel maken in Scratch met scoreteller en levens.', duration: '2x 45 min', tools: 'Scratch 3.0', tags: ['Scratch', 'Variabelen'], completed: false,
-        objectives: ['Variabelen programmeren in Scratch'], materials: 'Laptops.', instap: 'Hoe onthoudt een game je score?', kern: 'Vanger-game maken met score teller.', slot: 'Elkaars games spelen.'
-      },
-      {
-        id: 'l5-veil-1', grade: 'L5', category: 'veiligheid', title: 'Phishing en valse berichten',
-        description: 'Mails en SMS-berichten controleren op echtheid.', duration: '45 min', tools: 'Phishing Quiz', tags: ['Phishing', 'Cyberhygiëne'], completed: false,
-        objectives: ['Kenmerken van phishing herkennen'], materials: 'Voorbeeld e-mails.', instap: 'Je hebt €500 gewonnen!', kern: 'Verdachte berichten inspecteren.', slot: '3-seconden-check.'
-      },
-      {
-        id: 'l5-media-1', grade: 'L5', category: 'mediawijsheid', title: 'Fake news & Factchecking',
-        description: 'Betrouwbaarheid van online berichten en bronnen evalueren.', duration: '50 min', tools: 'Nieuwssites', tags: ['Factchecking', 'Fake News'], completed: false,
-        objectives: ['Informatie verifiëren via meerdere bronnen'], materials: '3 artikelen (echt/nep).', instap: 'Mag je alles geloven op internet?', kern: 'Auteur en bronnen natrekken.', slot: 'Checklist presenteren.'
-      },
-      {
-        id: 'l5-creat-1', grade: 'L5', category: 'creatie', title: 'Canva poster & infographic',
-        description: 'Grafische poster maken over een maatschappelijk thema.', duration: '2x 45 min', tools: 'Canva for Education', tags: ['Canva', 'Design'], completed: false,
-        objectives: ['Layout-principes en typografie toepassen'], materials: 'Canva accounts.', instap: 'Twee posters vergelijken.', kern: 'Poster maken over milieuthema.', slot: 'Tentoonstelling in klas.'
-      },
-
-      // L6
-      {
-        id: 'l6-comp-1', grade: 'L6', category: 'computationeel', title: 'Micro:bit sensoren & lussen',
-        description: 'Temperatuur- en versnellingssensoren programmeren.', duration: '50 min', tools: 'Micro:bit, MakeCode', tags: ['Micro:bit', 'Sensoren'], completed: false,
-        objectives: ['Omgevingsdata verwerken met als/dan voorwaarden'], materials: 'Micro:bits met batterij.', instap: 'Hoe werkt een slimme thermostaat?', kern: 'Nachtlampje programmeren met lichtsensor.', slot: 'Testen in donkere hoek.'
-      },
-      {
-        id: 'l6-veil-1', grade: 'L6', category: 'veiligheid', title: 'Digitale voetafdruk & Privacy',
-        description: 'Onderzoeken welke data apps verzamelen en opslaan.', duration: '50 min', tools: 'Video, Privacy tools', tags: ['Data', 'Privacy'], completed: false,
-        objectives: ['Begrijpen hoe data commercieel verzameld wordt'], materials: 'Educatieve video.', instap: 'Schoenen zoeken op Google.', kern: 'Je eigen digitale voetafdruk invullen.', slot: 'Privacy instellingen nalopen.'
-      },
-      {
-        id: 'l6-media-1', grade: 'L6', category: 'mediawijsheid', title: 'Algoritmes van Social Media',
-        description: 'Begrijpen hoe aanbevelingen en echokamers werken.', duration: '50 min', tools: 'Simulator', tags: ['Algoritmes', 'Social Media'], completed: false,
-        objectives: ['Werking van aanbevelingsalgoritmes doorzien'], materials: 'Feed simulator.', instap: 'Waarom is iedereen zijn FYP anders?', kern: 'Experiment met liken en kijktijd.', slot: 'Reflectie op bubbels.'
-      },
-      {
-        id: 'l6-creat-1', grade: 'L6', category: 'creatie', title: '3D Modelleren in Tinkercad',
-        description: 'Ruimtelijk object ontwerpen voor de 3D-printer.', duration: '2x 50 min', tools: 'Tinkercad, 3D Printer', tags: ['Tinkercad', '3D Modelleren'], completed: false,
-        objectives: ['3D ontwerpen met basisvormen en gaten'], materials: 'Laptops, Tinkercad.', instap: '3D software demonstratie.', kern: 'Sleutelhanger met initiaal ontwerpen.', slot: 'Exporteren als STL.'
-      }
-    ];
+  {
+    "id": "k3-comp-1",
+    "grade": "K3",
+    "category": "computationeel",
+    "title": "Bee-Bot paden maken",
+    "description": "Met fysieke matten richtingen (vooruit, achteruit) programmeren.",
+    "duration": "45 min",
+    "tools": "Bee-Bot, Vloermatten",
+    "tags": [
+      "Bee-Bot",
+      "Unplugged"
+    ],
+    "completed": false,
+    "objectives": [
+      "Eenvoudige stappenplannen begrijpen en uitvoeren",
+      "Fysieke knoppen op de Bee-Bot koppelen aan bewegingsrichtingen",
+      "Fouten in een route opsporen en corrigeren"
+    ],
+    "materials": "3 Bee-Bots, themamatten (vloer), pijlenkaarten.",
+    "instap": "Demonstratie in de kring.",
+    "kern": "Leerlingen werken in 3-tallen op de klasmat.",
+    "slot": "Klasgesprek over fouten herstellen.",
+    "differentiation": "Moeilijker: Voeg een obstakel toe."
+  },
+  {
+    "id": "k3-comp-2",
+    "grade": "K3",
+    "category": "computationeel",
+    "title": "Richtingkaarten sorteren",
+    "description": "Pijlen ordenen van start- naar eindpunt op de vloer.",
+    "duration": "30 min",
+    "tools": "Vloertape, Pijlkaarten",
+    "tags": [
+      "Pijlen",
+      "Unplugged"
+    ],
+    "completed": false,
+    "objectives": [
+      "Ruimtelijke oriëntatie benoemen",
+      "Een pad uitleggen met visuele symbolen"
+    ],
+    "materials": "Grote gelamineerde pijlkaarten.",
+    "instap": "Loop als een robot door de klas.",
+    "kern": "Kleuters leggen een spoor van pijlen op de vloer.",
+    "slot": "Samen het pad aflopen."
+  },
+  {
+    "id": "k3-comp-3",
+    "grade": "K3",
+    "category": "computationeel",
+    "title": "Patronen leggen op de mat",
+    "description": "Logische reeksen en kleurpatronen afmaken met bouwblokken.",
+    "duration": "35 min",
+    "tools": "Bouwblokken, Roosters",
+    "tags": [
+      "Patronen",
+      "Bouwstenen"
+    ],
+    "completed": false,
+    "objectives": [
+      "Herhalende patronen herkennen",
+      "Fouten in een reeks opsporen"
+    ],
+    "materials": "Duplo/LEGO blokken in diverse kleuren.",
+    "instap": "Ketting maken in de kring.",
+    "kern": "Kleuters vullen patronen aan op de mat.",
+    "slot": "Elkaars patroonketting bewonderen."
+  },
+  {
+    "id": "k3-veil-1",
+    "grade": "K3",
+    "category": "veiligheid",
+    "title": "Schermtijd afspreken",
+    "description": "Praatplaat over gezonde afspraken met tablets in de klas.",
+    "duration": "30 min",
+    "tools": "Praatplaat, Klaszandloper",
+    "tags": [
+      "Schermtijd",
+      "Klasafspraken"
+    ],
+    "completed": false,
+    "objectives": [
+      "Inzien dat schermen een tijdslimiet hebben"
+    ],
+    "materials": "Praatplaat en zandloper.",
+    "instap": "Kijk naar de praatplaat.",
+    "kern": "Samen regels opstellen voor de tablethoek.",
+    "slot": "Pictogrammen ophangen."
+  },
+  {
+    "id": "k3-veil-2",
+    "grade": "K3",
+    "category": "veiligheid",
+    "title": "Test met Bingel",
+    "description": "Tegels uittesten en zorgzaam omgaan met de klas-tablets.",
+    "duration": "25 min",
+    "tools": "Klas-tablets, Bingel App",
+    "tags": [
+      "Klasafspraken",
+      "Bingel"
+    ],
+    "completed": false,
+    "objectives": [
+      "Tablet veilig dragen met twee handen"
+    ],
+    "materials": "Tablets met beschermhoes.",
+    "instap": "Poppenspel over voorzichtigheid.",
+    "kern": "Oefenen met inloggen en vasthouden.",
+    "slot": "Tablet-diploma uitdelen."
+  },
+  {
+    "id": "k3-media-1",
+    "grade": "K3",
+    "category": "mediawijsheid",
+    "title": "Test 2",
+    "description": "Kritisch kijken naar foto's en illustraties in boeken.",
+    "duration": "30 min",
+    "tools": "Prentenboeken, Tablets",
+    "tags": [
+      "Beeldtaal",
+      "Foto vs Tekening"
+    ],
+    "completed": false,
+    "objectives": [
+      "Verschil herkennen tussen echte foto en tekening"
+    ],
+    "materials": "Fotokaarten.",
+    "instap": "Vergelijk foto met illustratie.",
+    "kern": "Sorteerspel op tafel.",
+    "slot": "Klasgesprek."
+  },
+  {
+    "id": "k3-media-2",
+    "grade": "K3",
+    "category": "mediawijsheid",
+    "title": "Test 3",
+    "description": "Herkennen van basispictogrammen op schermen.",
+    "duration": "30 min",
+    "tools": "Tablets, Pictogramkaarten",
+    "tags": [
+      "Pictogrammen",
+      "Navigatie"
+    ],
+    "completed": false,
+    "objectives": [
+      "Symbolen herkennen (Play, Pauze, Home, Kruisje)"
+    ],
+    "materials": "Grote pictogrammen.",
+    "instap": "Pictogrammenspel.",
+    "kern": "Symbolen terugzoeken in kinder-apps.",
+    "slot": "Quiz."
+  },
+  {
+    "id": "k3-creat-1",
+    "grade": "K3",
+    "category": "creatie",
+    "title": "Foto-zoektocht in de klas",
+    "description": "Voorwerpen uit het jaarthema fotograferen met de tablet.",
+    "duration": "45 min",
+    "tools": "Camera-app op Tablet",
+    "tags": [
+      "Fotografie",
+      "Tablet"
+    ],
+    "completed": false,
+    "objectives": [
+      "Camera-knop bedienen",
+      "Scherpstellen op voorwerpen"
+    ],
+    "materials": "Zoekkaarten.",
+    "instap": "Demonstratie camera.",
+    "kern": "Voorwerpen zoeken en fotograferen.",
+    "slot": "Diavoorstelling op digibord."
+  },
+  {
+    "id": "l1-comp-1",
+    "grade": "L1",
+    "category": "computationeel",
+    "title": "Pijlenreeks volgen (Unplugged)",
+    "description": "Papieren roosters doorlopen met pijlenkaarten.",
+    "duration": "45 min",
+    "tools": "Roosters, Potloden",
+    "tags": [
+      "Unplugged",
+      "Pijlen"
+    ],
+    "completed": false,
+    "objectives": [
+      "Instructies nauwkeurig volgen op papier"
+    ],
+    "materials": "Werkbladen.",
+    "instap": "Instructies voorlezen.",
+    "kern": "Pad tekenen op werkblad.",
+    "slot": "Controle op digibord."
+  },
+  {
+    "id": "l1-comp-2",
+    "grade": "L1",
+    "category": "computationeel",
+    "title": "Bee-Bot hindernissen",
+    "description": "Obstakels omzeilen op het stratenplan.",
+    "duration": "50 min",
+    "tools": "Bee-Bot, Bouwblokken",
+    "tags": [
+      "Bee-Bot",
+      "Debugging"
+    ],
+    "completed": false,
+    "objectives": [
+      "Alternatieve route programmeren bij een obstakel"
+    ],
+    "materials": "Stratenplan.",
+    "instap": "Omgevallen boom op de weg!",
+    "kern": "Snelste route bouwen in duo's.",
+    "slot": "Presentatie routes."
+  },
+  {
+    "id": "l1-veil-1",
+    "grade": "L1",
+    "category": "veiligheid",
+    "title": "Geheime wachtwoorden",
+    "description": "Waarom hou je je wachtwoord voor jezelf?",
+    "duration": "35 min",
+    "tools": "Inlogkaarten",
+    "tags": [
+      "Wachtwoorden",
+      "Privacy"
+    ],
+    "completed": false,
+    "objectives": [
+      "Begrijpen waarom een wachtwoord geheim is"
+    ],
+    "materials": "Inlogkaarten.",
+    "instap": "Geheimzinnig verhaaltje.",
+    "kern": "Oefenen met inloggen.",
+    "slot": "Klasregel vastleggen."
+  },
+  {
+    "id": "l1-media-1",
+    "grade": "L1",
+    "category": "mediawijsheid",
+    "title": "Echt of nep op foto?",
+    "description": "Bewerkt beeldmateriaal vergelijken met echte foto's.",
+    "duration": "40 min",
+    "tools": "Digibord",
+    "tags": [
+      "Beeldbewerking",
+      "Mediawijsheid"
+    ],
+    "completed": false,
+    "objectives": [
+      "Herkennen dat beelden digitaal veranderd kunnen worden"
+    ],
+    "materials": "Presentatie.",
+    "instap": "Kan een kat echt vliegen?",
+    "kern": "Discussie over beeldbewerking.",
+    "slot": "Stemronde met bordjes."
+  },
+  {
+    "id": "l1-creat-1",
+    "grade": "L1",
+    "category": "creatie",
+    "title": "Inspreken in Book Creator",
+    "description": "Stem opnemen bij een zelfgemaakte digitale tekening.",
+    "duration": "50 min",
+    "tools": "Book Creator App",
+    "tags": [
+      "Book Creator",
+      "Audio"
+    ],
+    "completed": false,
+    "objectives": [
+      "Tekening maken en eigen stem opnemen"
+    ],
+    "materials": "Tablets.",
+    "instap": "Opnameknop uitleggen.",
+    "kern": "Dier tekenen en 1 zin inspreken.",
+    "slot": "Beluisteren via klasluidspreker."
+  },
+  {
+    "id": "l2-comp-1",
+    "grade": "L2",
+    "category": "computationeel",
+    "title": "ScratchJr eerste stappen",
+    "description": "Figuurtjes laten bewegen en geluid maken.",
+    "duration": "50 min",
+    "tools": "ScratchJr",
+    "tags": [
+      "ScratchJr",
+      "Blokken"
+    ],
+    "completed": false,
+    "objectives": [
+      "Basisblokken begrijpen en animatie maken"
+    ],
+    "materials": "Tablets.",
+    "instap": "Kat laten bewegen op scherm.",
+    "kern": "Twee karakters laten praten.",
+    "slot": "Tablet-carrousel."
+  },
+  {
+    "id": "l2-comp-2",
+    "grade": "L2",
+    "category": "computationeel",
+    "title": "Stappenplan tandenpoetsen",
+    "description": "Dagelijkse handelingen ontleden in exacte volgorde.",
+    "duration": "35 min",
+    "tools": "Stappenkaarten",
+    "tags": [
+      "Algoritme",
+      "Dagelijks Leven"
+    ],
+    "completed": false,
+    "objectives": [
+      "Handeling opsplitsen in chronologische stappen"
+    ],
+    "materials": "Kaartenset.",
+    "instap": "Tanden verkeerd om poetsen.",
+    "kern": "Kaarten in juiste volgorde leggen.",
+    "slot": "Begrip Algoritme introduceren."
+  },
+  {
+    "id": "l2-veil-1",
+    "grade": "L2",
+    "category": "veiligheid",
+    "title": "Mijn persoonlijke gegevens",
+    "description": "Welke info (naam, adres, school) deel je wel of niet?",
+    "duration": "40 min",
+    "tools": "Sorteerkaarten",
+    "tags": [
+      "Privacy",
+      "Persoonsgegevens"
+    ],
+    "completed": false,
+    "objectives": [
+      "Onderscheid maken tussen privé en openbaar"
+    ],
+    "materials": "Groen/rood bordje.",
+    "instap": "Adres aan vreemden geven?",
+    "kern": "Sorteeroefening op tafel.",
+    "slot": "Privé-poster maken."
+  },
+  {
+    "id": "l2-media-1",
+    "grade": "L2",
+    "category": "mediawijsheid",
+    "title": "Zoeken op kindersites",
+    "description": "Gericht informatie opzoeken op veilige jeugdsites.",
+    "duration": "45 min",
+    "tools": "Wikikids",
+    "tags": [
+      "Zoekmachines",
+      "Internet"
+    ],
+    "completed": false,
+    "objectives": [
+      "Zoektermen intypen op kindersites"
+    ],
+    "materials": "Zoekopdracht-kaarten.",
+    "instap": "Hoe weet een pc het antwoord?",
+    "kern": "Vragen beantwoorden via Wikikids.",
+    "slot": "Beste zoekwoorden vergelijken."
+  },
+  {
+    "id": "l2-creat-1",
+    "grade": "L2",
+    "category": "creatie",
+    "title": "Digitaal prentenboek",
+    "description": "Prentenboek maken met tekst en ingesproken audio.",
+    "duration": "2x 45 min",
+    "tools": "Book Creator",
+    "tags": [
+      "Book Creator",
+      "Verhaal"
+    ],
+    "completed": false,
+    "objectives": [
+      "Tekst, beelden en audio combineren"
+    ],
+    "materials": "Tablets.",
+    "instap": "Voorbeeld prentenboek tonen.",
+    "kern": "3 pagina's maken (Begin, Midden, Einde).",
+    "slot": "Klassenboek bundelen."
+  },
+  {
+    "id": "l3-comp-1",
+    "grade": "L3",
+    "category": "computationeel",
+    "title": "ScratchJr herhaallussen",
+    "description": "Herhaallussen gebruiken voor patronen in animaties.",
+    "duration": "50 min",
+    "tools": "ScratchJr",
+    "tags": [
+      "ScratchJr",
+      "Lussen"
+    ],
+    "completed": false,
+    "objectives": [
+      "Nut van herhaallussen begrijpen"
+    ],
+    "materials": "Tablets.",
+    "instap": "Losse blokken vergelijken met herhaallus.",
+    "kern": "Vierkant wandelen of springen met herhaallus.",
+    "slot": "Kortste code bekronen."
+  },
+  {
+    "id": "l3-veil-1",
+    "grade": "L3",
+    "category": "veiligheid",
+    "title": "Veilig internetten op school",
+    "description": "Gedragsregels voor het gebruik van schoollaptops.",
+    "duration": "40 min",
+    "tools": "ICT-Contract",
+    "tags": [
+      "Netiquette",
+      "Schoolregels"
+    ],
+    "completed": false,
+    "objectives": [
+      "Gedragsregels voor school-laptops begrijpen"
+    ],
+    "materials": "Klascontract.",
+    "instap": "Afspraken online vs speelplaats.",
+    "kern": "Casussen bespreken.",
+    "slot": "Contract untertekenen."
+  },
+  {
+    "id": "l3-media-1",
+    "grade": "L3",
+    "category": "mediawijsheid",
+    "title": "Reclame in gratis games",
+    "description": "Verborgen reclame en pop-ups in spelletjes herkennen.",
+    "duration": "45 min",
+    "tools": "Digibord",
+    "tags": [
+      "Reclame",
+      "In-Game"
+    ],
+    "completed": false,
+    "objectives": [
+      "Het doel van reclame in gratis games begrijpen"
+    ],
+    "materials": "Screencasts van games.",
+    "instap": "Waarom is een spel gratis in de winkel?",
+    "kern": "Op zoek naar de kruisjes en nepknoppen.",
+    "slot": "Regels opstellen."
+  },
+  {
+    "id": "l3-creat-1",
+    "grade": "L3",
+    "category": "creatie",
+    "title": "Presentatie van 3 dia's",
+    "description": "Diashow maken over een lievelingsdier.",
+    "duration": "2x 45 min",
+    "tools": "Google Slides",
+    "tags": [
+      "Google Slides",
+      "Presenteren"
+    ],
+    "completed": false,
+    "objectives": [
+      "Presentatie maken met tekst en beelden"
+    ],
+    "materials": "Laptops.",
+    "instap": "Wat maakt een goede diashow?",
+    "kern": "3 dia's vullen over lievelingsdier.",
+    "slot": "Presenteren in duo's."
+  },
+  {
+    "id": "l4-comp-1",
+    "grade": "L4",
+    "category": "computationeel",
+    "title": "Micro:bit eerste stappen",
+    "description": "Tekst en smileys programmeren op de LED-matrix.",
+    "duration": "50 min",
+    "tools": "Micro:bit, MakeCode",
+    "tags": [
+      "Micro:bit",
+      "Hardware"
+    ],
+    "completed": false,
+    "objectives": [
+      "Code overzetten naar fysieke micro:bit"
+    ],
+    "materials": "Micro:bits, USB-kabels.",
+    "instap": "Waar zit de processor?",
+    "kern": "Naamkaartje en smileys programmeren.",
+    "slot": "Micro:bits tonen."
+  },
+  {
+    "id": "l4-veil-1",
+    "grade": "L4",
+    "category": "veiligheid",
+    "title": "Sterke wachtwoorden bouwen",
+    "description": "Wachtzinnen ontwerpen en testen met een wachtwoordmeter.",
+    "duration": "40 min",
+    "tools": "Wachtwoordmeter",
+    "tags": [
+      "Cyberhygiëne",
+      "Wachtwoorden"
+    ],
+    "completed": false,
+    "objectives": [
+      "Begrijpen wat een wachtwoord sterk maakt"
+    ],
+    "materials": "Online tester.",
+    "instap": "Test wachtwoord 123456.",
+    "kern": "Wachtzinnen bedenken en testen.",
+    "slot": "Poster met tips."
+  },
+  {
+    "id": "l4-media-1",
+    "grade": "L4",
+    "category": "mediawijsheid",
+    "title": "Online pesten & Groepschats",
+    "description": "Afspraken maken over respectvolle taal in klas-apps.",
+    "duration": "45 min",
+    "tools": "Stellingkaarten",
+    "tags": [
+      "Netiquette",
+      "Cyberpesten"
+    ],
+    "completed": false,
+    "objectives": [
+      "Impact van teksten zonder mimiek begrijpen"
+    ],
+    "materials": "Voorbeeldchats.",
+    "instap": "Bericht met en zonder smiley.",
+    "kern": "Discussie over buitensluiten.",
+    "slot": "WhatsApp protocol."
+  },
+  {
+    "id": "l4-creat-1",
+    "grade": "L4",
+    "category": "creatie",
+    "title": "Audio-podcast opnemen",
+    "description": "Kort nieuwsbericht of hoorspel inspreken en editen.",
+    "duration": "2x 45 min",
+    "tools": "Audacity / Soundtrap",
+    "tags": [
+      "Podcast",
+      "Audio"
+    ],
+    "completed": false,
+    "objectives": [
+      "Audio opnemen, knippen en bewerken"
+    ],
+    "materials": "Microfoons.",
+    "instap": "Kinder-podcast beluisteren.",
+    "kern": "Nieuwsbericht inspreken met muziek.",
+    "slot": "Podcast beluisteren."
+  },
+  {
+    "id": "l5-comp-1",
+    "grade": "L5",
+    "category": "computationeel",
+    "title": "Scratch variabelen & score",
+    "description": "Spel maken in Scratch met scoreteller en levens.",
+    "duration": "2x 45 min",
+    "tools": "Scratch 3.0",
+    "tags": [
+      "Scratch",
+      "Variabelen"
+    ],
+    "completed": false,
+    "objectives": [
+      "Variabelen programmeren in Scratch"
+    ],
+    "materials": "Laptops.",
+    "instap": "Hoe onthoudt een game je score?",
+    "kern": "Vanger-game maken met score teller.",
+    "slot": "Elkaars games spelen."
+  },
+  {
+    "id": "l5-veil-1",
+    "grade": "L5",
+    "category": "veiligheid",
+    "title": "Phishing en valse berichten",
+    "description": "Mails en SMS-berichten controleren op echtheid.",
+    "duration": "45 min",
+    "tools": "Phishing Quiz",
+    "tags": [
+      "Phishing",
+      "Cyberhygiëne"
+    ],
+    "completed": false,
+    "objectives": [
+      "Kenmerken van phishing herkennen"
+    ],
+    "materials": "Voorbeeld e-mails.",
+    "instap": "Je hebt €500 gewonnen!",
+    "kern": "Verdachte berichten inspecteren.",
+    "slot": "3-seconden-check."
+  },
+  {
+    "id": "l5-media-1",
+    "grade": "L5",
+    "category": "mediawijsheid",
+    "title": "Fake news & Factchecking",
+    "description": "Betrouwbaarheid van online berichten en bronnen evalueren.",
+    "duration": "50 min",
+    "tools": "Nieuwssites",
+    "tags": [
+      "Factchecking",
+      "Fake News"
+    ],
+    "completed": false,
+    "objectives": [
+      "Informatie verifiëren via meerdere bronnen"
+    ],
+    "materials": "3 artikelen (echt/nep).",
+    "instap": "Mag je alles geloven op internet?",
+    "kern": "Auteur en bronnen natrekken.",
+    "slot": "Checklist presenteren."
+  },
+  {
+    "id": "l5-creat-1",
+    "grade": "L5",
+    "category": "creatie",
+    "title": "Canva poster & infographic",
+    "description": "Grafische poster maken over een maatschappelijk thema.",
+    "duration": "2x 45 min",
+    "tools": "Canva for Education",
+    "tags": [
+      "Canva",
+      "Design"
+    ],
+    "completed": false,
+    "objectives": [
+      "Layout-principes en typografie toepassen"
+    ],
+    "materials": "Canva accounts.",
+    "instap": "Twee posters vergelijken.",
+    "kern": "Poster maken over milieuthema.",
+    "slot": "Tentoonstelling in klas."
+  },
+  {
+    "id": "l6-comp-1",
+    "grade": "L6",
+    "category": "computationeel",
+    "title": "Micro:bit sensoren & lussen",
+    "description": "Temperatuur- en versnellingssensoren programmeren.",
+    "duration": "50 min",
+    "tools": "Micro:bit, MakeCode",
+    "tags": [
+      "Micro:bit",
+      "Sensoren"
+    ],
+    "completed": false,
+    "objectives": [
+      "Omgevingsdata verwerken met als/dan voorwaarden"
+    ],
+    "materials": "Micro:bits met batterij.",
+    "instap": "Hoe werkt een slimme thermostaat?",
+    "kern": "Nachtlampje programmeren met lichtsensor.",
+    "slot": "Testen in donkere hoek."
+  },
+  {
+    "id": "l6-veil-1",
+    "grade": "L6",
+    "category": "veiligheid",
+    "title": "Digitale voetafdruk & Privacy",
+    "description": "Onderzoeken welke data apps verzamelen en opslaan.",
+    "duration": "50 min",
+    "tools": "Video, Privacy tools",
+    "tags": [
+      "Data",
+      "Privacy"
+    ],
+    "completed": false,
+    "objectives": [
+      "Begrijpen hoe data commercieel verzameld wordt"
+    ],
+    "materials": "Educatieve video.",
+    "instap": "Schoenen zoeken op Google.",
+    "kern": "Je eigen digitale voetafdruk invullen.",
+    "slot": "Privacy instellingen nalopen."
+  },
+  {
+    "id": "l6-media-1",
+    "grade": "L6",
+    "category": "mediawijsheid",
+    "title": "Algoritmes van Social Media",
+    "description": "Begrijpen hoe aanbevelingen en echokamers werken.",
+    "duration": "50 min",
+    "tools": "Simulator",
+    "tags": [
+      "Algoritmes",
+      "Social Media"
+    ],
+    "completed": false,
+    "objectives": [
+      "Werking van aanbevelingsalgoritmes doorzien"
+    ],
+    "materials": "Feed simulator.",
+    "instap": "Waarom is iedereen zijn FYP anders?",
+    "kern": "Experiment met liken en kijktijd.",
+    "slot": "Reflectie op bubbels."
+  },
+  {
+    "id": "l6-creat-1",
+    "grade": "L6",
+    "category": "creatie",
+    "title": "3D Modelleren in Tinkercad",
+    "description": "Ruimtelijk object ontwerpen voor de 3D-printer.",
+    "duration": "2x 50 min",
+    "tools": "Tinkercad, 3D Printer",
+    "tags": [
+      "Tinkercad",
+      "3D Modelleren"
+    ],
+    "completed": false,
+    "objectives": [
+      "3D ontwerpen met basisvormen en gaten"
+    ],
+    "materials": "Laptops, Tinkercad.",
+    "instap": "3D software demonstratie.",
+    "kern": "Sleutelhanger met initiaal ontwerpen.",
+    "slot": "Exporteren als STL."
+  },
+  {
+    "id": "les-1793736682384",
+    "grade": "K3",
+    "category": "creatie",
+    "title": "Les met meester Bert",
+    "description": "We maken een selfiekaart.",
+    "duration": "45 min",
+    "tools": "",
+    "tagsInput": "",
+    "objectivesInput": "",
+    "materials": "",
+    "instap": "",
+    "kern": "",
+    "slot": "",
+    "differentiation": "",
+    "completed": false,
+    "tags": [],
+    "objectives": []
+  }
+]
 
     const CATEGORIES = [
       {
@@ -1148,7 +1705,9 @@
         const toast = ref({ show: false, message: '' });
 
         onMounted(() => {
-          const stored = localStorage.getItem('leerlijn_ict_lessons_v5');
+          // 💡 TIP: Verhoog de versie (bijv. v6) als je de standaardlessen hebt bijgewerkt,
+          // zodat alle bezoekers direct de nieuwste lessen zien in hun browser.
+          const stored = localStorage.getItem('leerlijn_ict_lessons_v6');
           if (stored) {
             try {
               lessons.value = JSON.parse(stored);
@@ -1166,7 +1725,7 @@
         });
 
         watch(lessons, (newVal) => {
-          localStorage.setItem('leerlijn_ict_lessons_v5', JSON.stringify(newVal));
+          localStorage.setItem('leerlijn_ict_lessons_v6', JSON.stringify(newVal));
         }, { deep: true });
 
         const categories = computed(() => CATEGORIES);
