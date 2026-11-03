@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="nl" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leerlijn ICT Basisonderwijs</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Print layout styles */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: white !important;
+        font-size: 10pt;
+      }
+      .grid-matrix {
+        display: block !important;
+      }
+      .cell-box {
+        break-inside: avoid;
+        border: 1px solid #e2e8f0 !important;
+        margin-bottom: 8px;
+      }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+  <div id="app" class="min-h-screen flex flex-col">
+
+    <!-- TOP HEADER NAVBAR -->
+    <header class="bg-white border-b border-slate-200 z-30 shadow-xs no-print">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md shadow-indigo-200 shrink-0">
+            ICT
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-bold text-slate-900 tracking-tight">Leerlijn ICT Basisonderwijs</h1>
+              <span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-200">
+                K3 t/m L6
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">Overzicht van leerlijnen, lesfiches en voortgang</p>
+          </div>
+        </div>
+
+        <!-- Progress bar & Action buttons -->
+        <div class="flex items-center flex-wrap gap-3">
+          
+          <!-- Voortgang Indicator -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-1.5 flex items-center gap-3">
+            <div class="text-left">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Klasvoortgang</div>
+              <div class="text-xs font-extrabold text-slate-800">
+                {{ completedCount }} / {{ lessons.length }} gegeven <span class="text-indigo-600 font-bold">({{ progressPercentage }}%)</span>
+              </div>
+            </div>
+            <div class="w-20 bg-slate-200 rounded-full h-2 overflow-hidden">
+              <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" :style="{ width: progressPercentage + '%' }"></div>
+            </div>
+          </div>
+
+          <!-- View Mode Toggle (Matrix / Lijst op mobiel) -->
+          <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
+            <button 
+              @click="viewMode = 'matrix'" 
+              :class="viewMode === 'matrix' ? 'bg-white text-indigo-600 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+              class="px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1"
+              title="Matrix / Rasterweergave"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+              Raster
+            </button>
+            <button 
+              @click="viewMode = 'list'" 
+              :class="viewMode === 'list' ? 'bg-white text-indigo-600 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+              class="px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1"
+              title="Lijstweergave (Handig voor mobiel)"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+              Lijst
+            </button>
+          </div>
+
+          <button @click="openAddModal()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            + Les
+          </button>
+
+          <button @click="printCurriculum()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-medium rounded-lg transition-all shadow-xs">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Afdrukken
+          </button>
+
+          <!-- Options Menu -->
+          <div class="relative group">
+            <button class="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg shadow-xs transition-all">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+            </button>
+            <div class="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 hidden group-hover:block z-50">
+              <button @click="exportJSON()" class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Exporteer JSON
+              </button>
+              <label class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Importeer JSON
+                <input type="file" accept=".json" @change="importJSON" class="hidden">
+              </label>
+              <hr class="my-1 border-slate-100">
+              <button @click="confirmReset()" class="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Herstel standaarddata
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- CONTROL BAR: SEARCH & FILTERS -->
+    <section class="bg-slate-100/90 border-b border-slate-200 py-3 no-print">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+        
+        <!-- Search bar -->
+        <div class="relative w-full md:w-72">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Zoek les, app, trefwoord..." 
+            class="w-full pl-9 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-xs"
+          >
+          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Status filter (Nog te doen / Gegeven) -->
+        <div class="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-xs">
+          <span class="text-[11px] font-semibold text-slate-400 px-1.5">Status:</span>
+          <button 
+            @click="statusFilter = 'ALL'"
+            :class="statusFilter === 'ALL' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'"
+            class="px-2 py-0.5 text-xs rounded transition-all"
+          >
+            Alle
+          </button>
+          <button 
+            @click="statusFilter = 'TODO'"
+            :class="statusFilter === 'TODO' ? 'bg-amber-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'"
+            class="px-2 py-0.5 text-xs rounded transition-all"
+          >
+            Nog te doen
+          </button>
+          <button 
+            @click="statusFilter = 'DONE'"
+            :class="statusFilter === 'DONE' ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'"
+            class="px-2 py-0.5 text-xs rounded transition-all"
+          >
+            Gegeven
+          </button>
+        </div>
+
+        <!-- Grade Filter Pills -->
+        <div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+          <span class="text-xs font-semibold text-slate-500 mr-1 hidden lg:inline">Leerjaar:</span>
+          <button 
+            @click="selectedGradeFilter = 'ALL'"
+            :class="selectedGradeFilter === 'ALL' ? 'bg-indigo-600 text-white font-semibold' : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'"
+            class="px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap"
+          >
+            Alle
+          </button>
+          <button 
+            v-for="grade in grades" 
+            :key="grade.id"
+            @click="selectedGradeFilter = grade.id"
+            :class="selectedGradeFilter === grade.id ? 'bg-indigo-600 text-white font-semibold' : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'"
+            class="px-2.5 py-1 text-xs rounded-lg transition-all whitespace-nowrap"
+          >
+            {{ grade.shortLabel }}
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 lg:p-6">
+
+      <!-- ======================================================== -->
+      <!-- OPTIE A: RASTERWEERGAVE (MATRIX) -->
+      <!-- ======================================================== -->
+      <div v-if="viewMode === 'matrix'" class="overflow-x-auto">
+        <div class="min-w-[1050px] border border-slate-200 rounded-2xl bg-white shadow-xs overflow-hidden grid-matrix">
+          
+          <!-- MATRIX HEADER: Solid backgrounds (Fixed overlap issue for K3) -->
+          <div class="grid grid-cols-12 border-b border-slate-200 bg-white">
+            
+            <!-- Grade Column Title Header -->
+            <div class="col-span-2 bg-slate-100/90 border-r border-slate-200 p-3.5 flex items-center justify-center">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Leerjaar \ Categorie</span>
+            </div>
+
+            <!-- 4 Solid Category Headers -->
+            <div 
+              v-for="cat in categories" 
+              :key="cat.id"
+              class="col-span-2.5 border-r last:border-r-0 p-3.5 flex flex-col justify-between"
+              :class="[cat.solidHeaderBg, cat.headerBorder]"
+            >
+              <div class="flex items-start gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-xs" :class="cat.iconBg">
+                  <svg v-if="cat.icon === 'brain'" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                  <svg v-if="cat.icon === 'shield'" class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                  <svg v-if="cat.icon === 'media'" class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                  <svg v-if="cat.icon === 'sparkles'" class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-xs leading-snug" :class="cat.textColor">{{ cat.title }}</h3>
+                  <p class="text-[10px] text-slate-500 leading-tight mt-0.5">{{ cat.subtitle }}</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MATRIX ROWS (K3 t/m L6) -->
+          <div 
+            v-for="grade in visibleGrades" 
+            :key="grade.id"
+            class="grid grid-cols-12 border-b border-slate-200 last:border-b-0 group/row"
+          >
+            <!-- Grade Left Cell -->
+            <div class="col-span-2 bg-slate-50/90 border-r border-slate-200 p-3 flex flex-col justify-center items-center text-center group-hover/row:bg-slate-100 transition-colors">
+              <div class="w-9 h-9 rounded-full bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center shadow-xs mb-1">
+                {{ grade.code }}
+              </div>
+              <span class="text-xs font-bold text-slate-800 leading-tight">{{ grade.label }}</span>
+              <span class="text-[10px] text-slate-400 font-medium mt-0.5">{{ grade.ageGroup }}</span>
+            </div>
+
+            <!-- 4 Cells for Categories -->
+            <div 
+              v-for="cat in visibleCategories" 
+              :key="cat.id"
+              class="col-span-2.5 border-r last:border-r-0 p-3 relative flex flex-col justify-between transition-colors hover:bg-slate-50/50"
+              :class="cat.bgTint"
+            >
+              <!-- Cards List -->
+              <div class="space-y-2.5">
+                <div 
+                  v-for="lesson in getLessonsForCell(grade.id, cat.id)" 
+                  :key="lesson.id"
+                  @click="openViewModal(lesson)"
+                  class="bg-white rounded-xl p-3 border shadow-xs hover:shadow-md transition-all cursor-pointer relative group/card"
+                  :class="[cat.cardBorder, lesson.completed ? 'bg-emerald-50/30 border-emerald-300' : '']"
+                >
+                  <!-- Card Top Header -->
+                  <div class="flex items-start justify-between gap-1.5">
+                    <h4 class="font-bold text-xs leading-snug transition-colors" :class="lesson.completed ? 'text-emerald-950 line-through decoration-emerald-500/40' : 'text-slate-900 group-hover/card:text-indigo-600'">
+                      {{ lesson.title }}
+                    </h4>
+                    
+                    <!-- Quick Toggle Completed Checkbox -->
+                    <button 
+                      @click.stop="toggleCompleted(lesson)" 
+                      class="shrink-0 p-1 rounded-md transition-colors"
+                      :title="lesson.completed ? 'Markeer als nog te doen' : 'Markeer als gegeven'"
+                    >
+                      <span v-if="lesson.completed" class="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">✓</span>
+                      <span v-else class="w-4 h-4 rounded-full border border-slate-300 group-hover/card:border-indigo-400 flex items-center justify-center text-[9px] text-transparent hover:text-slate-400">✓</span>
+                    </button>
+                  </div>
+
+                  <!-- Summary -->
+                  <p class="text-[11px] font-normal leading-relaxed mt-1 line-clamp-2" :class="lesson.completed ? 'text-slate-500' : 'text-slate-600'">
+                    {{ lesson.description }}
+                  </p>
+
+                  <!-- Badges Bar -->
+                  <div class="flex flex-wrap items-center gap-1 mt-2 pt-1.5 border-t border-slate-100">
+                    <span v-if="lesson.completed" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      Gegeven
+                    </span>
+                    <span 
+                      v-for="tag in lesson.tags" 
+                      :key="tag" 
+                      class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/60"
+                    >
+                      {{ tag }}
+                    </span>
+                    <span v-if="lesson.duration" class="text-[9px] font-medium text-slate-400 ml-auto">
+                      ⏱️ {{ lesson.duration }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Lesson inside cell -->
+              <div class="mt-2 pt-1 text-center no-print">
+                <button 
+                  @click="openAddModal(grade.id, cat.id)"
+                  class="w-full py-1.5 px-2 text-[11px] font-medium text-slate-400 hover:text-indigo-600 hover:bg-white border border-dashed border-slate-200 hover:border-indigo-300 rounded-lg transition-all flex items-center justify-center gap-1 opacity-70 hover:opacity-100"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Les toevoegen
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- ======================================================== -->
+      <!-- OPTIE B: LIJSTWEERGAVE (MOBIELE SMARTPHONE MODUS) -->
+      <!-- ======================================================== -->
+      <div v-else class="space-y-6">
+        <div v-for="grade in visibleGrades" :key="grade.id" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+          
+          <!-- Grade Section Header -->
+          <div class="flex items-center gap-3 pb-3 border-b border-slate-100 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+              {{ grade.code }}
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">{{ grade.label }}</h2>
+              <p class="text-xs text-slate-400 font-medium">Doelgroep: {{ grade.ageGroup }}</p>
+            </div>
+          </div>
+
+          <!-- Cards Grid per Category for Mobile -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <template v-for="cat in categories" :key="cat.id">
+              <div 
+                v-for="lesson in getLessonsForCell(grade.id, cat.id)" 
+                :key="lesson.id"
+                @click="openViewModal(lesson)"
+                class="bg-slate-50/80 rounded-xl p-3.5 border border-slate-200 hover:border-indigo-400 cursor-pointer transition-all shadow-xs"
+                :class="lesson.completed ? 'bg-emerald-50/40 border-emerald-300' : ''"
+              >
+                <div class="flex items-center justify-between gap-2 mb-1.5">
+                  <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white border border-slate-200" :class="cat.textColor">
+                    {{ cat.title.split(' ')[0] }}
+                  </span>
+                  
+                  <button @click.stop="toggleCompleted(lesson)" class="px-2 py-0.5 text-[10px] font-bold rounded" :class="lesson.completed ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'">
+                    {{ lesson.completed ? '✓ Gegeven' : 'Markeer gegeven' }}
+                  </button>
+                </div>
+
+                <h3 class="font-bold text-sm text-slate-900 mb-1" :class="lesson.completed ? 'line-through text-slate-600' : ''">
+                  {{ lesson.title }}
+                </h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-2">{{ lesson.description }}</p>
+
+                <div class="flex flex-wrap gap-1 text-[10px] text-slate-500">
+                  <span class="bg-white px-2 py-0.5 rounded border border-slate-200 font-medium">⏱️ {{ lesson.duration }}</span>
+                  <span v-if="lesson.tools" class="bg-white px-2 py-0.5 rounded border border-slate-200 font-medium">💻 {{ lesson.tools }}</span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- EMPTY STATE IF SEARCH FAILS -->
+      <div v-if="filteredLessonsCount === 0" class="text-center py-12 bg-white rounded-2xl border border-slate-200 mt-4">
+        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">Geen lessen gevonden</h3>
+        <p class="text-xs text-slate-500 max-w-md mx-auto mt-1">Geen enkele les voldoet aan de huidige zoekterm of statusfilter.</p>
+        <button @click="resetFilters()" class="mt-3 px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800">
+          Wis alle filters
+        </button>
+      </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto no-print">
+      <div class="max-w-[1600px] mx-auto px-4 text-center text-xs text-slate-500">
+        <p>Leerlijn ICT Basisonderwijs • Afgestemd op de leerplandoelen ICT & Mediawijsheid</p>
+      </div>
+    </footer>
+
+    <!-- ======================================================== -->
+    <!-- MODAL 1: VIEW LESSON DETAIL -->
+    <!-- ======================================================== -->
+    <div v-if="activeModal === 'VIEW' && activeLesson" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+        
+        <!-- Modal Top Bar Header -->
+        <div class="px-6 py-4 border-b border-slate-100 flex items-start justify-between gap-4" :class="getCategoryBg(activeLesson.category)">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white shadow-xs border" :class="getCategoryTextColor(activeLesson.category)">
+                {{ getCategoryTitle(activeLesson.category) }}
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white">
+                {{ activeLesson.grade }} - {{ getGradeLabel(activeLesson.grade) }}
+              </span>
+              <span v-if="activeLesson.completed" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white flex items-center gap-1">
+                ✓ Gegeven
+              </span>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-900 leading-tight">
+              {{ activeLesson.title }}
+            </h2>
+          </div>
+
+          <button @click="closeModal()" class="text-slate-400 hover:text-slate-700 bg-white/80 p-1.5 rounded-full hover:bg-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Modal Body Content -->
+        <div class="p-6 overflow-y-auto space-y-6 text-slate-700 text-xs sm:text-sm">
+          
+          <!-- Key Info Highlights Box -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Tijdsduur</span>
+              <span class="font-semibold text-slate-800">⏱️ {{ activeLesson.duration || '45 min' }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Materiaal & Tools</span>
+              <span class="font-semibold text-slate-800">💻 {{ activeLesson.tools || 'Geen specifieke software' }}</span>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Trefwoorden</span>
+              <div class="flex flex-wrap gap-1 mt-0.5">
+                <span v-for="tag in activeLesson.tags" :key="tag" class="px-1.5 py-0.5 bg-white text-slate-700 font-medium text-[10px] rounded border border-slate-200">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Korte Omschrijving</h3>
+            <p class="text-slate-800 leading-relaxed font-medium bg-slate-50/50 p-3 rounded-lg border border-slate-100">
+              {{ activeLesson.description }}
+            </p>
+          </div>
+
+          <!-- Leerdoelen (Objectives) -->
+          <div v-if="activeLesson.objectives && activeLesson.objectives.length">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🎯 Leerdoelen</h3>
+            <ul class="space-y-1.5">
+              <li v-for="(obj, i) in activeLesson.objectives" :key="i" class="flex items-start gap-2 bg-emerald-50/50 text-emerald-950 p-2.5 rounded-lg border border-emerald-100/80">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>{{ obj }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Materials Needed -->
+          <div v-if="activeLesson.materials">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">📦 Benodigdheden</h3>
+            <p class="text-slate-700 bg-amber-50/40 p-3 rounded-lg border border-amber-100/80">
+              {{ activeLesson.materials }}
+            </p>
+          </div>
+
+          <!-- Lesverloop (Instap, Kern, Slot) -->
+          <div v-if="activeLesson.instap || activeLesson.kern || activeLesson.slot">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">📋 Lesverloop</h3>
+            
+            <div class="space-y-3">
+              <div v-if="activeLesson.instap" class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <strong class="text-xs font-bold text-slate-900">1. Instap / Inleiding (± 10 min)</strong>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-xs">{{ activeLesson.instap }}</p>
+              </div>
+
+              <div v-if="activeLesson.kern" class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  <strong class="text-xs font-bold text-slate-900">2. Kern & Opdrachten (± 30 min)</strong>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-xs">{{ activeLesson.kern }}</p>
+              </div>
+
+              <div v-if="activeLesson.slot" class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <strong class="text-xs font-bold text-slate-900">3. Slot & Reflectie (± 10 min)</strong>
+                </div>
+                <p class="text-slate-600 leading-relaxed text-xs">{{ activeLesson.slot }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Differentiatie -->
+          <div v-if="activeLesson.differentiation">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">💡 Differentiatie & Tips</h3>
+            <p class="text-slate-700 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100 text-xs leading-relaxed">
+              {{ activeLesson.differentiation }}
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Modal Bottom Actions Footer -->
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          
+          <button 
+            @click="toggleCompleted(activeLesson)" 
+            :class="activeLesson.completed ? 'bg-amber-100 text-amber-900 hover:bg-amber-200 border-amber-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'"
+            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border"
+          >
+            <span v-if="activeLesson.completed">✕ Markeer als nog te doen</span>
+            <span v-else>✓ Markeer als gegeven</span>
+          </button>
+
+          <div class="flex items-center gap-2 ml-auto">
+            <button @click="openEditModal(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs transition-all flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              Bewerken
+            </button>
+
+            <button @click="confirmDeleteLesson(activeLesson)" class="px-3 py-1.5 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              Verwijderen
+            </button>
+
+            <button @click="closeModal()" class="px-4 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-all">
+              Sluiten
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- MODAL 2: ADD / EDIT LESSON FORM -->
+    <!-- ======================================================== -->
+    <div v-if="activeModal === 'FORM'" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all flex flex-col max-h-[92vh]">
+        
+        <!-- Form Header -->
+        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">
+              {{ formLesson.id ? 'Les Bewerken' : 'Nieuwe Les Toevoegen' }}
+            </h2>
+            <p class="text-xs text-slate-500">Vul de lesfiches-gegevens in voor het ICT-overzicht</p>
+          </div>
+          <button @click="closeModal()" class="text-slate-400 hover:text-slate-700 p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Form Body Inputs -->
+        <form @submit.prevent="saveLesson" class="p-6 overflow-y-auto space-y-4 text-xs">
+          
+          <!-- Title & Duration -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block font-bold text-slate-700 mb-1">Lestitel *</label>
+              <input v-model="formLesson.title" required type="text" placeholder="bijv. Bee-Bot paden maken" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Tijdsduur</label>
+              <input v-model="formLesson.duration" type="text" placeholder="bijv. 45 min" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Grade & Category Dropdowns -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Leerjaar *</label>
+              <select v-model="formLesson.grade" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                <option v-for="g in grades" :key="g.id" :value="g.id">{{ g.code }} - {{ g.label }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">ICT Categorie *</label>
+              <select v-model="formLesson.category" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.title }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Short Description -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Korte Beschrijving (zichtbaar op de kaart) *</label>
+            <textarea v-model="formLesson.description" required rows="2" placeholder="Samenvatting in 1 of 2 zinnen..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+          </div>
+
+          <!-- Tools & Tags -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Software / Materialen / Apps</label>
+              <input v-model="formLesson.tools" type="text" placeholder="bijv. ScratchJr, Tablets, Bee-Bot" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Tags (komma-gescheiden)</label>
+              <input v-model="formLesson.tagsInput" type="text" placeholder="Unplugged, Algoritme, Scratch" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Leerdoelen (multiline) -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Leerdoelen (1 per regel)</label>
+            <textarea v-model="formLesson.objectivesInput" rows="3" placeholder="- Eenvoudige stappenplannen begrijpen&#10;- Fouten in een route herstellen" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+          </div>
+
+          <!-- Lesverloop (Instap, Kern, Slot) -->
+          <div class="space-y-3 pt-2 border-t border-slate-200">
+            <h4 class="font-bold text-slate-800 text-xs">Lesverloop Fases</h4>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">1. Instap / Inleiding</label>
+              <textarea v-model="formLesson.instap" rows="2" placeholder="Demonstratie in de kring..." class="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">2. Kern & Opdrachten</label>
+              <textarea v-model="formLesson.kern" rows="2" placeholder="Leerlingen werken in duo's..." class="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">3. Slot & Reflectie</label>
+              <textarea v-model="formLesson.slot" rows="2" placeholder="Klasgesprek en afsluiting..." class="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+            </div>
+          </div>
+
+          <!-- Differentiatie -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Differentiatie / Extra Tips</label>
+            <input v-model="formLesson.differentiation" type="text" placeholder="Moeilijker: obstakels toevoegen. Eenvoudiger: beperk aantal stappen." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+
+          <!-- Form Action Footer -->
+          <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+            <button type="button" @click="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-100 transition-all">
+              Annuleren
+            </button>
+            <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs transition-all">
+              {{ formLesson.id ? 'Opslaan' : 'Les Toevoegen' }}
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- MODAL 3: CONFIRMATION DIALOG -->
+    <!-- ======================================================== -->
+    <div v-if="activeModal === 'CONFIRM_DELETE' || activeModal === 'CONFIRM_RESET'" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center">
+        
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+
+        <h3 class="text-lg font-bold text-slate-900">
+          {{ activeModal === 'CONFIRM_DELETE' ? 'Les Verwijderen?' : 'Herstel Standaarddata?' }}
+        </h3>
+        
+        <p class="text-xs text-slate-500 mt-1 mb-6">
+          {{ activeModal === 'CONFIRM_DELETE' 
+              ? 'Weet je zeker dat je deze les wilt verwijderen uit de leerlijn? Dit kan niet ongedaan worden gemaakt.' 
+              : 'Alle eigen aanpassingen en de voortgang worden overschreven met de fabrieksinstellingen.' }}
+        </p>
+
+        <div class="flex items-center justify-center gap-3">
+          <button @click="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">
+            Annuleren
+          </button>
+          <button 
+            @click="activeModal === 'CONFIRM_DELETE' ? deleteLesson() : executeReset()" 
+            class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-xs"
+          >
+            Ja, Doorgaan
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- TOAST NOTIFICATION -->
+    <div v-if="toast.show" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-800 animate-bounce">
+      <span class="text-emerald-400 text-lg">✓</span>
+      <span class="text-xs font-medium">{{ toast.message }}</span>
+    </div>
+
+  </div>
+
+  <!-- VUE 3 APPLICATION SCRIPT -->
+  <script>
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    // INITIAL DATASET
+    const INITIAL_LESSONS = [
+      // K3
+      {
+        id: 'k3-comp-1', grade: 'K3', category: 'computationeel', title: 'Bee-Bot paden maken',
+        description: 'Met fysieke matten richtingen (vooruit, achteruit) programmeren.', duration: '45 min', tools: 'Bee-Bot, Vloermatten', tags: ['Bee-Bot', 'Unplugged'], completed: false,
+        objectives: ['Eenvoudige stappenplannen begrijpen en uitvoeren', 'Fysieke knoppen op de Bee-Bot koppelen aan bewegingsrichtingen', 'Fouten in een route opsporen en corrigeren'],
+        materials: '3 Bee-Bots, themamatten (vloer), pijlenkaarten.', instap: 'Demonstratie in de kring.', kern: 'Leerlingen werken in 3-tallen op de klasmat.', slot: 'Klasgesprek over fouten herstellen.', differentiation: 'Moeilijker: Voeg een obstakel toe.'
+      },
+      {
+        id: 'k3-comp-2', grade: 'K3', category: 'computationeel', title: 'Richtingkaarten sorteren',
+        description: 'Pijlen ordenen van start- naar eindpunt op de vloer.', duration: '30 min', tools: 'Vloertape, Pijlkaarten', tags: ['Pijlen', 'Unplugged'], completed: false,
+        objectives: ['Ruimtelijke oriëntatie benoemen', 'Een pad uitleggen met visuele symbolen'], materials: 'Grote gelamineerde pijlkaarten.', instap: 'Loop als een robot door de klas.', kern: 'Kleuters leggen een spoor van pijlen op de vloer.', slot: 'Samen het pad aflopen.'
+      },
+      {
+        id: 'k3-comp-3', grade: 'K3', category: 'computationeel', title: 'Patronen leggen op de mat',
+        description: 'Logische reeksen en kleurpatronen afmaken met bouwblokken.', duration: '35 min', tools: 'Bouwblokken, Roosters', tags: ['Patronen', 'Bouwstenen'], completed: false,
+        objectives: ['Herhalende patronen herkennen', 'Fouten in een reeks opsporen'], materials: 'Duplo/LEGO blokken in diverse kleuren.', instap: 'Ketting maken in de kring.', kern: 'Kleuters vullen patronen aan op de mat.', slot: 'Elkaars patroonketting bewonderen.'
+      },
+      {
+        id: 'k3-veil-1', grade: 'K3', category: 'veiligheid', title: 'Schermtijd afspreken',
+        description: 'Praatplaat over gezonde afspraken met tablets in de klas.', duration: '30 min', tools: 'Praatplaat, Klaszandloper', tags: ['Schermtijd', 'Klasafspraken'], completed: false,
+        objectives: ['Inzien dat schermen een tijdslimiet hebben'], materials: 'Praatplaat en zandloper.', instap: 'Kijk naar de praatplaat.', kern: 'Samen regels opstellen voor de tablethoek.', slot: 'Pictogrammen ophangen.'
+      },
+      {
+        id: 'k3-veil-2', grade: 'K3', category: 'veiligheid', title: 'Test met Bingel',
+        description: 'Tegels uittesten en zorgzaam omgaan met de klas-tablets.', duration: '25 min', tools: 'Klas-tablets, Bingel App', tags: ['Klasafspraken', 'Bingel'], completed: false,
+        objectives: ['Tablet veilig dragen met twee handen'], materials: 'Tablets met beschermhoes.', instap: 'Poppenspel over voorzichtigheid.', kern: 'Oefenen met inloggen en vasthouden.', slot: 'Tablet-diploma uitdelen.'
+      },
+      {
+        id: 'k3-media-1', grade: 'K3', category: 'mediawijsheid', title: 'Test 2',
+        description: 'Kritisch kijken naar foto\'s en illustraties in boeken.', duration: '30 min', tools: 'Prentenboeken, Tablets', tags: ['Beeldtaal', 'Foto vs Tekening'], completed: false,
+        objectives: ['Verschil herkennen tussen echte foto en tekening'], materials: 'Fotokaarten.', instap: 'Vergelijk foto met illustratie.', kern: 'Sorteerspel op tafel.', slot: 'Klasgesprek.'
+      },
+      {
+        id: 'k3-media-2', grade: 'K3', category: 'mediawijsheid', title: 'Test 3',
+        description: 'Herkennen van basispictogrammen op schermen.', duration: '30 min', tools: 'Tablets, Pictogramkaarten', tags: ['Pictogrammen', 'Navigatie'], completed: false,
+        objectives: ['Symbolen herkennen (Play, Pauze, Home, Kruisje)'], materials: 'Grote pictogrammen.', instap: 'Pictogrammenspel.', kern: 'Symbolen terugzoeken in kinder-apps.', slot: 'Quiz.'
+      },
+      {
+        id: 'k3-creat-1', grade: 'K3', category: 'creatie', title: 'Foto-zoektocht in de klas',
+        description: 'Voorwerpen uit het jaarthema fotograferen met de tablet.', duration: '45 min', tools: 'Camera-app op Tablet', tags: ['Fotografie', 'Tablet'], completed: false,
+        objectives: ['Camera-knop bedienen', 'Scherpstellen op voorwerpen'], materials: 'Zoekkaarten.', instap: 'Demonstratie camera.', kern: 'Voorwerpen zoeken en fotograferen.', slot: 'Diavoorstelling op digibord.'
+      },
+
+      // L1
+      {
+        id: 'l1-comp-1', grade: 'L1', category: 'computationeel', title: 'Pijlenreeks volgen (Unplugged)',
+        description: 'Papieren roosters doorlopen met pijlenkaarten.', duration: '45 min', tools: 'Roosters, Potloden', tags: ['Unplugged', 'Pijlen'], completed: false,
+        objectives: ['Instructies nauwkeurig volgen op papier'], materials: 'Werkbladen.', instap: 'Instructies voorlezen.', kern: 'Pad tekenen op werkblad.', slot: 'Controle op digibord.'
+      },
+      {
+        id: 'l1-comp-2', grade: 'L1', category: 'computationeel', title: 'Bee-Bot hindernissen',
+        description: 'Obstakels omzeilen op het stratenplan.', duration: '50 min', tools: 'Bee-Bot, Bouwblokken', tags: ['Bee-Bot', 'Debugging'], completed: false,
+        objectives: ['Alternatieve route programmeren bij een obstakel'], materials: 'Stratenplan.', instap: 'Omgevallen boom op de weg!', kern: 'Snelste route bouwen in duo\'s.', slot: 'Presentatie routes.'
+      },
+      {
+        id: 'l1-veil-1', grade: 'L1', category: 'veiligheid', title: 'Geheime wachtwoorden',
+        description: 'Waarom hou je je wachtwoord voor jezelf?', duration: '35 min', tools: 'Inlogkaarten', tags: ['Wachtwoorden', 'Privacy'], completed: false,
+        objectives: ['Begrijpen waarom een wachtwoord geheim is'], materials: 'Inlogkaarten.', instap: 'Geheimzinnig verhaaltje.', kern: 'Oefenen met inloggen.', slot: 'Klasregel vastleggen.'
+      },
+      {
+        id: 'l1-media-1', grade: 'L1', category: 'mediawijsheid', title: 'Echt of nep op foto?',
+        description: 'Bewerkt beeldmateriaal vergelijken met echte foto\'s.', duration: '40 min', tools: 'Digibord', tags: ['Beeldbewerking', 'Mediawijsheid'], completed: false,
+        objectives: ['Herkennen dat beelden digitaal veranderd kunnen worden'], materials: 'Presentatie.', instap: 'Kan een kat echt vliegen?', kern: 'Discussie over beeldbewerking.', slot: 'Stemronde met bordjes.'
+      },
+      {
+        id: 'l1-creat-1', grade: 'L1', category: 'creatie', title: 'Inspreken in Book Creator',
+        description: 'Stem opnemen bij een zelfgemaakte digitale tekening.', duration: '50 min', tools: 'Book Creator App', tags: ['Book Creator', 'Audio'], completed: false,
+        objectives: ['Tekening maken en eigen stem opnemen'], materials: 'Tablets.', instap: 'Opnameknop uitleggen.', kern: 'Dier tekenen en 1 zin inspreken.', slot: 'Beluisteren via klasluidspreker.'
+      },
+
+      // L2
+      {
+        id: 'l2-comp-1', grade: 'L2', category: 'computationeel', title: 'ScratchJr eerste stappen',
+        description: 'Figuurtjes laten bewegen en geluid maken.', duration: '50 min', tools: 'ScratchJr', tags: ['ScratchJr', 'Blokken'], completed: false,
+        objectives: ['Basisblokken begrijpen en animatie maken'], materials: 'Tablets.', instap: 'Kat laten bewegen op scherm.', kern: 'Twee karakters laten praten.', slot: 'Tablet-carrousel.'
+      },
+      {
+        id: 'l2-comp-2', grade: 'L2', category: 'computationeel', title: 'Stappenplan tandenpoetsen',
+        description: 'Dagelijkse handelingen ontleden in exacte volgorde.', duration: '35 min', tools: 'Stappenkaarten', tags: ['Algoritme', 'Dagelijks Leven'], completed: false,
+        objectives: ['Handeling opsplitsen in chronologische stappen'], materials: 'Kaartenset.', instap: 'Tanden verkeerd om poetsen.', kern: 'Kaarten in juiste volgorde leggen.', slot: 'Begrip Algoritme introduceren.'
+      },
+      {
+        id: 'l2-veil-1', grade: 'L2', category: 'veiligheid', title: 'Mijn persoonlijke gegevens',
+        description: 'Welke info (naam, adres, school) deel je wel of niet?', duration: '40 min', tools: 'Sorteerkaarten', tags: ['Privacy', 'Persoonsgegevens'], completed: false,
+        objectives: ['Onderscheid maken tussen privé en openbaar'], materials: 'Groen/rood bordje.', instap: 'Adres aan vreemden geven?', kern: 'Sorteeroefening op tafel.', slot: 'Privé-poster maken.'
+      },
+      {
+        id: 'l2-media-1', grade: 'L2', category: 'mediawijsheid', title: 'Zoeken op kindersites',
+        description: 'Gericht informatie opzoeken op veilige jeugdsites.', duration: '45 min', tools: 'Wikikids', tags: ['Zoekmachines', 'Internet'], completed: false,
+        objectives: ['Zoektermen intypen op kindersites'], materials: 'Zoekopdracht-kaarten.', instap: 'Hoe weet een pc het antwoord?', kern: 'Vragen beantwoorden via Wikikids.', slot: 'Beste zoekwoorden vergelijken.'
+      },
+      {
+        id: 'l2-creat-1', grade: 'L2', category: 'creatie', title: 'Digitaal prentenboek',
+        description: 'Prentenboek maken met tekst en ingesproken audio.', duration: '2x 45 min', tools: 'Book Creator', tags: ['Book Creator', 'Verhaal'], completed: false,
+        objectives: ['Tekst, beelden en audio combineren'], materials: 'Tablets.', instap: 'Voorbeeld prentenboek tonen.', kern: '3 pagina\'s maken (Begin, Midden, Einde).', slot: 'Klassenboek bundelen.'
+      },
+
+      // L3
+      {
+        id: 'l3-comp-1', grade: 'L3', category: 'computationeel', title: 'ScratchJr herhaallussen',
+        description: 'Herhaallussen gebruiken voor patronen in animaties.', duration: '50 min', tools: 'ScratchJr', tags: ['ScratchJr', 'Lussen'], completed: false,
+        objectives: ['Nut van herhaallussen begrijpen'], materials: 'Tablets.', instap: 'Losse blokken vergelijken met herhaallus.', kern: 'Vierkant wandelen of springen met herhaallus.', slot: 'Kortste code bekronen.'
+      },
+      {
+        id: 'l3-veil-1', grade: 'L3', category: 'veiligheid', title: 'Veilig internetten op school',
+        description: 'Gedragsregels voor het gebruik van schoollaptops.', duration: '40 min', tools: 'ICT-Contract', tags: ['Netiquette', 'Schoolregels'], completed: false,
+        objectives: ['Gedragsregels voor school-laptops begrijpen'], materials: 'Klascontract.', instap: 'Afspraken online vs speelplaats.', kern: 'Casussen bespreken.', slot: 'Contract ondertekenen.'
+      },
+      {
+        id: 'l3-media-1', grade: 'L3', category: 'mediawijsheid', title: 'Reclame in gratis games',
+        description: 'Verborgen reclame en pop-ups in spelletjes herkennen.', duration: '45 min', tools: 'Digibord', tags: ['Reclame', 'In-Game'], completed: false,
+        objectives: ['Het doel van reclame in gratis games begrijpen'], materials: 'Screencasts van games.', instap: 'Waarom is een spel gratis in de winkel?', kern: 'Op zoek naar de kruisjes en nepknoppen.', slot: 'Regels opstellen.'
+      },
+      {
+        id: 'l3-creat-1', grade: 'L3', category: 'creatie', title: 'Presentatie van 3 dia\'s',
+        description: 'Diashow maken over een lievelingsdier.', duration: '2x 45 min', tools: 'Google Slides', tags: ['Google Slides', 'Presenteren'], completed: false,
+        objectives: ['Presentatie maken met tekst en beelden'], materials: 'Laptops.', instap: 'Wat maakt een goede diashow?', kern: '3 dia\'s vullen over lievelingsdier.', slot: 'Presenteren in duo\'s.'
+      },
+
+      // L4
+      {
+        id: 'l4-comp-1', grade: 'L4', category: 'computationeel', title: 'Micro:bit eerste stappen',
+        description: 'Tekst en smileys programmeren op de LED-matrix.', duration: '50 min', tools: 'Micro:bit, MakeCode', tags: ['Micro:bit', 'Hardware'], completed: false,
+        objectives: ['Code overzetten naar fysieke micro:bit'], materials: 'Micro:bits, USB-kabels.', instap: 'Waar zit de processor?', kern: 'Naamkaartje en smileys programmeren.', slot: 'Micro:bits tonen.'
+      },
+      {
+        id: 'l4-veil-1', grade: 'L4', category: 'veiligheid', title: 'Sterke wachtwoorden bouwen',
+        description: 'Wachtzinnen ontwerpen en testen met een wachtwoordmeter.', duration: '40 min', tools: 'Wachtwoordmeter', tags: ['Cyberhygiëne', 'Wachtwoorden'], completed: false,
+        objectives: ['Begrijpen wat een wachtwoord sterk maakt'], materials: 'Online tester.', instap: 'Test wachtwoord 123456.', kern: 'Wachtzinnen bedenken en testen.', slot: 'Poster met tips.'
+      },
+      {
+        id: 'l4-media-1', grade: 'L4', category: 'mediawijsheid', title: 'Online pesten & Groepschats',
+        description: 'Afspraken maken over respectvolle taal in klas-apps.', duration: '45 min', tools: 'Stellingkaarten', tags: ['Netiquette', 'Cyberpesten'], completed: false,
+        objectives: ['Impact van teksten zonder mimiek begrijpen'], materials: 'Voorbeeldchats.', instap: 'Bericht met en zonder smiley.', kern: 'Discussie over buitensluiten.', slot: 'WhatsApp protocol.'
+      },
+      {
+        id: 'l4-creat-1', grade: 'L4', category: 'creatie', title: 'Audio-podcast opnemen',
+        description: 'Kort nieuwsbericht of hoorspel inspreken en editen.', duration: '2x 45 min', tools: 'Audacity / Soundtrap', tags: ['Podcast', 'Audio'], completed: false,
+        objectives: ['Audio opnemen, knippen en bewerken'], materials: 'Microfoons.', instap: 'Kinder-podcast beluisteren.', kern: 'Nieuwsbericht inspreken met muziek.', slot: 'Podcast beluisteren.'
+      },
+
+      // L5
+      {
+        id: 'l5-comp-1', grade: 'L5', category: 'computationeel', title: 'Scratch variabelen & score',
+        description: 'Spel maken in Scratch met scoreteller en levens.', duration: '2x 45 min', tools: 'Scratch 3.0', tags: ['Scratch', 'Variabelen'], completed: false,
+        objectives: ['Variabelen programmeren in Scratch'], materials: 'Laptops.', instap: 'Hoe onthoudt een game je score?', kern: 'Vanger-game maken met score teller.', slot: 'Elkaars games spelen.'
+      },
+      {
+        id: 'l5-veil-1', grade: 'L5', category: 'veiligheid', title: 'Phishing en valse berichten',
+        description: 'Mails en SMS-berichten controleren op echtheid.', duration: '45 min', tools: 'Phishing Quiz', tags: ['Phishing', 'Cyberhygiëne'], completed: false,
+        objectives: ['Kenmerken van phishing herkennen'], materials: 'Voorbeeld e-mails.', instap: 'Je hebt €500 gewonnen!', kern: 'Verdachte berichten inspecteren.', slot: '3-seconden-check.'
+      },
+      {
+        id: 'l5-media-1', grade: 'L5', category: 'mediawijsheid', title: 'Fake news & Factchecking',
+        description: 'Betrouwbaarheid van online berichten en bronnen evalueren.', duration: '50 min', tools: 'Nieuwssites', tags: ['Factchecking', 'Fake News'], completed: false,
+        objectives: ['Informatie verifiëren via meerdere bronnen'], materials: '3 artikelen (echt/nep).', instap: 'Mag je alles geloven op internet?', kern: 'Auteur en bronnen natrekken.', slot: 'Checklist presenteren.'
+      },
+      {
+        id: 'l5-creat-1', grade: 'L5', category: 'creatie', title: 'Canva poster & infographic',
+        description: 'Grafische poster maken over een maatschappelijk thema.', duration: '2x 45 min', tools: 'Canva for Education', tags: ['Canva', 'Design'], completed: false,
+        objectives: ['Layout-principes en typografie toepassen'], materials: 'Canva accounts.', instap: 'Twee posters vergelijken.', kern: 'Poster maken over milieuthema.', slot: 'Tentoonstelling in klas.'
+      },
+
+      // L6
+      {
+        id: 'l6-comp-1', grade: 'L6', category: 'computationeel', title: 'Micro:bit sensoren & lussen',
+        description: 'Temperatuur- en versnellingssensoren programmeren.', duration: '50 min', tools: 'Micro:bit, MakeCode', tags: ['Micro:bit', 'Sensoren'], completed: false,
+        objectives: ['Omgevingsdata verwerken met als/dan voorwaarden'], materials: 'Micro:bits met batterij.', instap: 'Hoe werkt een slimme thermostaat?', kern: 'Nachtlampje programmeren met lichtsensor.', slot: 'Testen in donkere hoek.'
+      },
+      {
+        id: 'l6-veil-1', grade: 'L6', category: 'veiligheid', title: 'Digitale voetafdruk & Privacy',
+        description: 'Onderzoeken welke data apps verzamelen en opslaan.', duration: '50 min', tools: 'Video, Privacy tools', tags: ['Data', 'Privacy'], completed: false,
+        objectives: ['Begrijpen hoe data commercieel verzameld wordt'], materials: 'Educatieve video.', instap: 'Schoenen zoeken op Google.', kern: 'Je eigen digitale voetafdruk invullen.', slot: 'Privacy instellingen nalopen.'
+      },
+      {
+        id: 'l6-media-1', grade: 'L6', category: 'mediawijsheid', title: 'Algoritmes van Social Media',
+        description: 'Begrijpen hoe aanbevelingen en echokamers werken.', duration: '50 min', tools: 'Simulator', tags: ['Algoritmes', 'Social Media'], completed: false,
+        objectives: ['Werking van aanbevelingsalgoritmes doorzien'], materials: 'Feed simulator.', instap: 'Waarom is iedereen zijn FYP anders?', kern: 'Experiment met liken en kijktijd.', slot: 'Reflectie op bubbels.'
+      },
+      {
+        id: 'l6-creat-1', grade: 'L6', category: 'creatie', title: '3D Modelleren in Tinkercad',
+        description: 'Ruimtelijk object ontwerpen voor de 3D-printer.', duration: '2x 50 min', tools: 'Tinkercad, 3D Printer', tags: ['Tinkercad', '3D Modelleren'], completed: false,
+        objectives: ['3D ontwerpen met basisvormen en gaten'], materials: 'Laptops, Tinkercad.', instap: '3D software demonstratie.', kern: 'Sleutelhanger met initiaal ontwerpen.', slot: 'Exporteren als STL.'
+      }
+    ];
+
+    // CATEGORIES CONFIGURATION (Solid colors used for Headers to fix overlay bug)
+    const CATEGORIES = [
+      {
+        id: 'computationeel',
+        title: 'Computationeel denken',
+        subtitle: 'Logica, algoritmes, patroonherkenning',
+        headerBg: 'bg-blue-50',
+        solidHeaderBg: 'bg-blue-100/80',
+        headerBorder: 'border-blue-200',
+        iconBg: 'bg-blue-200/80',
+        textColor: 'text-blue-900',
+        bgTint: 'bg-blue-50/20',
+        cardBorder: 'border-blue-200/80 hover:border-blue-400',
+        icon: 'brain'
+      },
+      {
+        id: 'veiligheid',
+        title: 'Digitale informatieveiligheid',
+        subtitle: 'Privacy, wachtwoorden, cyberhygiëne',
+        headerBg: 'bg-rose-50',
+        solidHeaderBg: 'bg-rose-100/80',
+        headerBorder: 'border-rose-200',
+        iconBg: 'bg-rose-200/80',
+        textColor: 'text-rose-900',
+        bgTint: 'bg-rose-50/20',
+        cardBorder: 'border-rose-200/80 hover:border-rose-400',
+        icon: 'shield'
+      },
+      {
+        id: 'mediawijsheid',
+        title: 'Mediawijsheid',
+        subtitle: 'Kritisch omgaan met nieuws & media',
+        headerBg: 'bg-amber-50',
+        solidHeaderBg: 'bg-amber-100/80',
+        headerBorder: 'border-amber-200',
+        iconBg: 'bg-amber-200/80',
+        textColor: 'text-amber-900',
+        bgTint: 'bg-amber-50/20',
+        cardBorder: 'border-amber-200/80 hover:border-amber-400',
+        icon: 'media'
+      },
+      {
+        id: 'creatie',
+        title: 'Digitale creatie',
+        subtitle: 'Media maken, presenteren, ontwerpen',
+        headerBg: 'bg-emerald-50',
+        solidHeaderBg: 'bg-emerald-100/80',
+        headerBorder: 'border-emerald-200',
+        iconBg: 'bg-emerald-200/80',
+        textColor: 'text-emerald-900',
+        bgTint: 'bg-emerald-50/20',
+        cardBorder: 'border-emerald-200/80 hover:border-emerald-400',
+        icon: 'sparkles'
+      }
+    ];
+
+    // GRADES CONFIGURATION
+    const GRADES = [
+      { id: 'K3', code: 'K3', label: '3de Kleuterklas', shortLabel: 'K3', ageGroup: '5-6 jaar' },
+      { id: 'L1', code: 'L1', label: '1ste Leerjaar', shortLabel: 'L1', ageGroup: '6-7 jaar' },
+      { id: 'L2', code: 'L2', label: '2de Leerjaar', shortLabel: 'L2', ageGroup: '7-8 jaar' },
+      { id: 'L3', code: 'L3', label: '3de Leerjaar', shortLabel: 'L3', ageGroup: '8-9 jaar' },
+      { id: 'L4', code: 'L4', label: '4de Leerjaar', shortLabel: 'L4', ageGroup: '9-10 jaar' },
+      { id: 'L5', code: 'L5', label: '5de Leerjaar', shortLabel: 'L5', ageGroup: '10-11 jaar' },
+      { id: 'L6', code: 'L6', label: '6de Leerjaar', shortLabel: 'L6', ageGroup: '11-12 jaar' }
+    ];
+
+    const app = createApp({
+      setup() {
+        const lessons = ref([]);
+        const searchQuery = ref('');
+        const selectedGradeFilter = ref('ALL');
+        const selectedCategoryFilter = ref('ALL');
+        const statusFilter = ref('ALL'); // 'ALL', 'TODO', 'DONE'
+        const viewMode = ref('matrix'); // 'matrix' or 'list'
+        
+        // Modals
+        const activeModal = ref(null); 
+        const activeLesson = ref(null);
+        const formLesson = ref({});
+        
+        // Toast
+        const toast = ref({ show: false, message: '' });
+
+        onMounted(() => {
+          const stored = localStorage.getItem('leerlijn_ict_lessons_v4');
+          if (stored) {
+            try {
+              lessons.value = JSON.parse(stored);
+            } catch (e) {
+              lessons.value = INITIAL_LESSONS;
+            }
+          } else {
+            lessons.value = INITIAL_LESSONS;
+          }
+        });
+
+        watch(lessons, (newVal) => {
+          localStorage.setItem('leerlijn_ict_lessons_v4', JSON.stringify(newVal));
+        }, { deep: true });
+
+        const categories = computed(() => CATEGORIES);
+        const grades = computed(() => GRADES);
+
+        const completedCount = computed(() => {
+          return lessons.value.filter(l => l.completed).length;
+        });
+
+        const progressPercentage = computed(() => {
+          if (!lessons.value.length) return 0;
+          return Math.round((completedCount.value / lessons.value.length) * 100);
+        });
+
+        const visibleGrades = computed(() => {
+          if (selectedGradeFilter.value === 'ALL') return GRADES;
+          return GRADES.filter(g => g.id === selectedGradeFilter.value);
+        });
+
+        const visibleCategories = computed(() => {
+          if (selectedCategoryFilter.value === 'ALL') return CATEGORIES;
+          return CATEGORIES.filter(c => c.id === selectedCategoryFilter.value);
+        });
+
+        const filteredLessonsCount = computed(() => {
+          let count = 0;
+          GRADES.forEach(g => {
+            CATEGORIES.forEach(c => {
+              count += getLessonsForCell(g.id, c.id).length;
+            });
+          });
+          return count;
+        });
+
+        const getLessonsForCell = (gradeId, categoryId) => {
+          return lessons.value.filter(lesson => {
+            if (lesson.grade !== gradeId) return false;
+            if (lesson.category !== categoryId) return false;
+            
+            // Status filter
+            if (statusFilter.value === 'TODO' && lesson.completed) return false;
+            if (statusFilter.value === 'DONE' && !lesson.completed) return false;
+
+            // Search filter
+            if (searchQuery.value.trim() !== '') {
+              const q = searchQuery.value.toLowerCase();
+              const matchTitle = lesson.title.toLowerCase().includes(q);
+              const matchDesc = lesson.description.toLowerCase().includes(q);
+              const matchTools = lesson.tools ? lesson.tools.toLowerCase().includes(q) : false;
+              const matchTags = lesson.tags ? lesson.tags.some(t => t.toLowerCase().includes(q)) : false;
+              return matchTitle || matchDesc || matchTools || matchTags;
+            }
+
+            return true;
+          });
+        };
+
+        const toggleCompleted = (lesson) => {
+          lesson.completed = !lesson.completed;
+          showNotification(lesson.completed ? `"${lesson.title}" gemarkeerd als gegeven!` : `Status van "${lesson.title}" hersteld.`);
+        };
+
+        // Modal triggers
+        const openViewModal = (lesson) => {
+          activeLesson.value = lesson;
+          activeModal.value = 'VIEW';
+        };
+
+        const openAddModal = (defaultGrade = 'K3', defaultCategory = 'computationeel') => {
+          formLesson.value = {
+            id: null,
+            grade: defaultGrade,
+            category: defaultCategory,
+            title: '',
+            description: '',
+            duration: '45 min',
+            tools: '',
+            tagsInput: '',
+            objectivesInput: '',
+            materials: '',
+            instap: '',
+            kern: '',
+            slot: '',
+            differentiation: '',
+            completed: false
+          };
+          activeModal.value = 'FORM';
+        };
+
+        const openEditModal = (lesson) => {
+          formLesson.value = {
+            ...lesson,
+            tagsInput: lesson.tags ? lesson.tags.join(', ') : '',
+            objectivesInput: lesson.objectives ? lesson.objectives.join('\n') : ''
+          };
+          activeModal.value = 'FORM';
+        };
+
+        const closeModal = () => {
+          activeModal.value = null;
+        };
+
+        const showNotification = (msg) => {
+          toast.value = { show: true, message: msg };
+          setTimeout(() => {
+            toast.value.show = false;
+          }, 3000);
+        };
+
+        const saveLesson = () => {
+          const tagsArr = formLesson.value.tagsInput 
+            ? formLesson.value.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
+            : [];
+          
+          const objArr = formLesson.value.objectivesInput 
+            ? formLesson.value.objectivesInput.split('\n').map(o => o.trim().replace(/^[-•*]\s*/, '')).filter(Boolean)
+            : [];
+
+          if (formLesson.value.id) {
+            const idx = lessons.value.findIndex(l => l.id === formLesson.value.id);
+            if (idx !== -1) {
+              lessons.value[idx] = {
+                ...formLesson.value,
+                tags: tagsArr,
+                objectives: objArr
+              };
+              activeLesson.value = lessons.value[idx];
+            }
+            showNotification('Les succesvol bijgewerkt!');
+          } else {
+            const newId = 'les-' + Date.now();
+            const newLessonObj = {
+              ...formLesson.value,
+              id: newId,
+              tags: tagsArr,
+              objectives: objArr,
+              completed: false
+            };
+            lessons.value.push(newLessonObj);
+            showNotification('Nieuwe les toegevoegd!');
+          }
+
+          closeModal();
+        };
+
+        const confirmDeleteLesson = (lesson) => {
+          activeLesson.value = lesson;
+          activeModal.value = 'CONFIRM_DELETE';
+        };
+
+        const deleteLesson = () => {
+          if (activeLesson.value) {
+            lessons.value = lessons.value.filter(l => l.id !== activeLesson.value.id);
+            showNotification('Les verwijderd uit de leerlijn.');
+          }
+          closeModal();
+        };
+
+        const confirmReset = () => {
+          activeModal.value = 'CONFIRM_RESET';
+        };
+
+        const executeReset = () => {
+          lessons.value = [...INITIAL_LESSONS];
+          localStorage.removeItem('leerlijn_ict_lessons_v4');
+          showNotification('Fabrieksinstellingen hersteld.');
+          closeModal();
+        };
+
+        const exportJSON = () => {
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lessons.value, null, 2));
+          const downloadAnchor = document.createElement('a');
+          downloadAnchor.setAttribute("href", dataStr);
+          downloadAnchor.setAttribute("download", `leerlijn_ict_basisonderwijs_${new Date().toISOString().slice(0,10)}.json`);
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          downloadAnchor.remove();
+          showNotification('JSON export gedownload!');
+        };
+
+        const importJSON = (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const importedData = JSON.parse(e.target.result);
+              if (Array.isArray(importedData)) {
+                lessons.value = importedData;
+                showNotification('Leerlijn succesvol geïmporteerd!');
+              } else {
+                alert('Ongeldig bestand: verwacht een JSON array.');
+              }
+            } catch (err) {
+              alert('Fout bij het lezen van het JSON-bestand.');
+            }
+          };
+          reader.readAsText(file);
+        };
+
+        const resetFilters = () => {
+          searchQuery.value = '';
+          selectedGradeFilter.value = 'ALL';
+          selectedCategoryFilter.value = 'ALL';
+          statusFilter.value = 'ALL';
+        };
+
+        const printCurriculum = () => {
+          window.print();
+        };
+
+        const getCategoryTitle = (catId) => {
+          const c = CATEGORIES.find(x => x.id === catId);
+          return c ? c.title : catId;
+        };
+
+        const getGradeLabel = (gradeId) => {
+          const g = GRADES.find(x => x.id === gradeId);
+          return g ? g.label : gradeId;
+        };
+
+        const getCategoryBg = (catId) => {
+          const c = CATEGORIES.find(x => x.id === catId);
+          return c ? c.headerBg : 'bg-slate-50';
+        };
+
+        const getCategoryTextColor = (catId) => {
+          const c = CATEGORIES.find(x => x.id === catId);
+          return c ? c.textColor : 'text-slate-900';
+        };
+
+        return {
+          lessons,
+          categories,
+          grades,
+          searchQuery,
+          selectedGradeFilter,
+          selectedCategoryFilter,
+          statusFilter,
+          viewMode,
+          visibleGrades,
+          visibleCategories,
+          filteredLessonsCount,
+          completedCount,
+          progressPercentage,
+          activeModal,
+          activeLesson,
+          formLesson,
+          toast,
+          getLessonsForCell,
+          toggleCompleted,
+          openViewModal,
+          openAddModal,
+          openEditModal,
+          closeModal,
+          saveLesson,
+          confirmDeleteLesson,
+          deleteLesson,
+          confirmReset,
+          executeReset,
+          exportJSON,
+          importJSON,
+          resetFilters,
+          printCurriculum,
+          getCategoryTitle,
+          getGradeLabel,
+          getCategoryBg,
+          getCategoryTextColor
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>
